@@ -1,18 +1,11 @@
 // The turn as it runs, for the band above the prompt: what the main loop is doing now,
 // one chip per finished tool call in its kind's colour, and the counts so far.
-import type { TurnStats } from '../types'
+import type { LiveChip, LiveTurn } from '../types'
 import { kindOf } from './tools'
 import type { Kind, Palette } from './skin'
 
-export type LiveChip = { kind: Kind; failed: boolean }
-export type LiveTurn = {
-  startedAt: number
-  // The call running now, or the last one with `done` until the next starts, so a fast
-  // call stays readable; null only before the first.
-  current: { kind: Kind; label: string; done?: boolean } | null
-  chips: LiveChip[]
-  stats: TurnStats
-}
+// Declared with the plugin's state, which must not import from the hooks.
+export type { LiveChip, LiveTurn }
 
 // The turn keeps its latest chips; the band shows fewer and counts the rest.
 export const MAX_CHIPS = 40
