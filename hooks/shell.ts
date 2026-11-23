@@ -69,11 +69,11 @@ export function foldLines<T>(lines: readonly T[], head: number, tail: number): F
 // How the call ended, worst first; an exit code only where the call reported one.
 export function shellStatus(result: ShellResult, isErrored: boolean, ascii: boolean): ShellStatus {
   if (result.interrupted) {
-    return { tone: 'warn', text: 'interrompido' }
+    return { tone: 'warn', text: 'Interrompido' }
   }
 
   if (result.timedOutAfterMs !== undefined) {
-    return { tone: 'warn', text: 'tempo esgotado' }
+    return { tone: 'warn', text: 'Tempo esgotado' }
   }
 
   if (isErrored) {

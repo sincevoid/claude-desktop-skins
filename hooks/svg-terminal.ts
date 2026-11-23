@@ -57,14 +57,14 @@ export function terminalSvg(output: ShellOutput, isErrored: boolean, palette: Pa
   const lines = outputLines(output)
   const step = staggerStep(Math.max(1, lines.length), 22)
   const status = output.interrupted
-    ? { text: 'interrompido', color: palette.warn }
+    ? { text: 'Interrompido', color: palette.warn }
     : output.timedOutAfterMs !== undefined
-      ? { text: 'tempo esgotado', color: palette.warn }
+      ? { text: 'Tempo esgotado', color: palette.warn }
       : isErrored
-        ? { text: 'falhou', color: palette.err }
+        ? { text: 'Falhou', color: palette.err }
         : { text: 'ok', color: palette.ok }
 
-  const rows = (lines.length === 0 ? [{ text: 'nenhuma saída', isErr: false, isNote: true }] : lines).map((line, i) => {
+  const rows = (lines.length === 0 ? [{ text: 'Nenhuma saída', isErr: false, isNote: true }] : lines).map((line, i) => {
     const top = HEADER_H + 6 + i * LINE_H
 
     if ('fold' in line) {

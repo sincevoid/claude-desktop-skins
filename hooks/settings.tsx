@@ -161,7 +161,7 @@ export function settingsPane(look: Look, ui: PaneUi, model: SettingsModel, actio
             label={colourOf(palette, model.editing)}
             placeholder="#rrggbb"
             value=""
-            submitLabel="pintar"
+            submitLabel="Pintar"
             onSubmit={(value: string) => actions.paint(value.trim())}
           />
         </Box>

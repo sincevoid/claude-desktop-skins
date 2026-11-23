@@ -1,6 +1,6 @@
 import { gapsOf, linear, parseTex, type Accent, type GridAlign, type MathNode, type Sym } from './math'
 import type { Palette } from './skin'
-import { CONTROL_SLOT, escape, HEADER_MID, riseEnd, svgCard } from './svg-kit'
+import { CONTROL_SLOT, escape, HEAD_FONT, headFill, HEADER_MID, riseEnd, svgCard } from './svg-kit'
 
 // A display formula as a card, laid out the way TeX lays out boxes: each part a width,
 // a height above the baseline and a depth below it, set side by side, stacked and
@@ -512,7 +512,7 @@ export function mathSvg(tex: string, palette: Palette, width: number, hasControl
   const y = HEADER_H + PAD + formula.a * scale
   const lines = node.kind === 'grid' ? node.rows.length : 1
   const header = [
-    `<text x="16" y="${HEADER_MID + 4}" font-size="11" style="fill:${palette.muted};letter-spacing:.1em;font-weight:600">MATH</text>`,
+    `<text x="16" y="${HEADER_MID + 4}" font-family="${HEAD_FONT}" font-size="11" style="${headFill(palette)};letter-spacing:.08em;font-weight:600">FÓRMULA</text>`,
     lines > 1 ? `<text x="${cardW - 16 - (hasControl ? CONTROL_SLOT : 0)}" y="${HEADER_MID + 4}" text-anchor="end" font-size="11" style="fill:${palette.muted}">${lines} linhas</text>` : '',
     `<line x1="0" y1="${HEADER_H - 0.5}" x2="${cardW}" y2="${HEADER_H - 0.5}" stroke="${palette.muted}" stroke-opacity=".3"/>`,
   ].join('')

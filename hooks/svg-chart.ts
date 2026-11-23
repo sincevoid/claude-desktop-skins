@@ -7,7 +7,7 @@ import { ganttBody, journeyBody, kanbanBody, timelineBody } from './svg-chart-pl
 import { gitBody, mindmapBody, quadrantBody, radarBody, sankeyBody } from './svg-chart-shape'
 import { packetBody, treemapBody } from './svg-chart-data'
 import { architectureBody, blockBody, c4Body, systemAlt } from './svg-chart-system'
-import { CONTROL_SLOT, escape, fitText, HEADER_MID, measure, riseDelay, riseEnd, svgCard } from './svg-kit'
+import { CONTROL_SLOT, escape, fitText, HEAD_FONT, headFill, HEADER_MID, measure, riseDelay, riseEnd, svgCard } from './svg-kit'
 
 // A Mermaid fence drawn as a card in the same shell as code and tables: the kind and
 // title in a header, then the drawing in the skin's colours.
@@ -23,7 +23,7 @@ function header(chart: Chart, palette: Palette, width: number, hasControl: boole
   const room = right - titleX - measure(count, false, 11) - 16
 
   return [
-    `<text x="16" y="${HEADER_MID + 4}" font-size="11" style="fill:${palette.muted};letter-spacing:.1em;font-weight:600">${escape(label)}</text>`,
+    `<text x="16" y="${HEADER_MID + 4}" font-family="${HEAD_FONT}" font-size="11" style="${headFill(palette)};letter-spacing:.08em;font-weight:600">${escape(label)}</text>`,
     title === '' ? '' : `<text x="${titleX}" y="${HEADER_MID + 4}" font-size="13" style="font-weight:600">${escape(fitText(title, room, false, 13))}</text>`,
     `<text x="${right}" y="${HEADER_MID + 4}" text-anchor="end" font-size="11" style="fill:${palette.muted}">${escape(count)}</text>`,
     `<line x1="0" y1="${HEADER_H - 0.5}" x2="${width}" y2="${HEADER_H - 0.5}" stroke="${palette.muted}" stroke-opacity=".3"/>`,

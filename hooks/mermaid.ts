@@ -335,7 +335,7 @@ function parsePie(head: string, body: readonly string[]): Pie | null {
 export function chartHeading(chart: Chart): { kind: string; count: string } {
   switch (chart.kind) {
     case 'flow':
-      return { kind: 'Fluxograma', count: plural(chart.nodes.length, 'passo') }
+      return { kind: 'Fluxograma', count: '' }
     case 'xy':
       return { kind: 'Gráfico', count: chart.series.length > 1 ? `${chart.series.length} séries` : plural(chart.labels.length, 'ponto') }
     case 'pie':

@@ -1,5 +1,6 @@
 import type { Palette } from './skin'
-import { escape, fitText, MONO, pill, riseDelay, staggerEnd, staggerStep, strokeIcon, svgCard } from './svg-kit'
+import { LANG_ICON } from './svg-code'
+import { escape, fitText, ICON_FONT, MONO, pill, riseDelay, staggerEnd, staggerStep, strokeIcon, svgCard } from './svg-kit'
 
 // An edit as a card: the file, how many lines it added and removed, and the changed
 // lines with their numbers, green and red, rising in one after another.
@@ -9,6 +10,8 @@ const LINE_H = 22
 const GAP_H = 20
 const CODE = 12.5
 const MAX_LINES = 30
+const extOf = (path: string): string => (/\.([a-z0-9+]+)$/i.exec(path)?.[1] ?? '').toLowerCase()
+
 const PENCIL = '<path d="M4 20h4L18.5 9.5a2.83 2.83 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'
 const NEW_FILE = '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M12 11v6M9 14h6"/>'
 
@@ -100,10 +103,13 @@ export function diffSvg(input: DiffInput, shownPath: string, palette: Palette, w
 
   const footer = hidden > 0 ? `<text x="${codeX}" y="${y + 18}" font-size="11.5" style="fill:${palette.muted}">mais ${hidden} linha${hidden === 1 ? '' : 's'}</text>` : ''
   const height = y + (hidden > 0 ? 30 : 8)
-  const tag = input.isNewFile ? pill(width - 16, 12, 'new file', palette.user, palette) : ''
+  const tag = input.isNewFile ? pill(width - 16, 12, 'arquivo novo', palette.user, palette) : ''
   const counts = `<text x="${width - (input.isNewFile ? 100 : 16)}" y="27" text-anchor="end" font-family="${MONO}" font-size="12.5"><tspan style="fill:${palette.ok}">+${added}</tspan><tspan style="fill:${palette.muted}">  </tspan><tspan style="fill:${palette.err}">−${removed}</tspan></text>`
   const header = [
-    strokeIcon(input.isNewFile ? NEW_FILE : PENCIL, 16, 13, 18, palette.fg),
+    // The file's language icon where there is one; else the pencil or the new-file mark.
+    LANG_ICON[extOf(shownPath)] === undefined
+      ? strokeIcon(input.isNewFile ? NEW_FILE : PENCIL, 16, 13, 18, palette.fg)
+      : `<text x="16" y="22" dominant-baseline="central" font-family="${ICON_FONT}" font-size="18" style="fill:${palette.user}">${LANG_ICON[extOf(shownPath)]}</text>`,
     `<text x="44" y="27" font-family="${MONO}" font-size="13" style="fill:${palette.fg}">${escape(fitText(shownPath, width - 220, true, 13))}</text>`,
     counts,
     tag,

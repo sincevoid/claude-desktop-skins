@@ -5,13 +5,22 @@ import type { Palette } from './skin'
 // card shell. Cards have no background of their own: the desktop draws an Svg as an
 // image, so the page shows through, and bands are faint tints of the text colour.
 
-export const FONT = `ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif`
-export const MONO = `ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, monospace`
+export const FONT = `'Inter Variable', Inter, 'Segoe UI Variable Text', 'Segoe UI Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif`
+// Card headers: a second face beside the body text, bright enough to read at a glance.
+export const HEAD_FONT = `Geist, 'Inter Variable', Inter, 'Segoe UI Variable Text', system-ui, sans-serif`
+export const headFill = (palette: Palette): string => `fill:${palette.fg};fill-opacity:.82`
+// Nerd Font faces, for the icons drawn in card headers.
+export const ICON_FONT = `'CaskaydiaCove NFM', 'CaskaydiaCove NF', 'JetBrainsMono NFM', 'JetBrainsMono NF', 'Symbols Nerd Font'`
+export const MONO = `'CaskaydiaCove NFM', 'CaskaydiaCove NF', 'Cascadia Mono', ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, monospace`
 
 export const escape = (text: string): string =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 // Width of a string in pixels, close enough to lay out a card without a renderer.
+// Inter and Segoe UI Variable run a little wider than the estimate below, which was set for
+// the system faces; the slack keeps wrapped table text inside its column.
+const SANS_SLACK = 1.08
+
 export function measure(text: string, isMono: boolean, size: number): number {
   if (isMono) {
     return [...text].reduce((sum, char) => sum + charWidth(char), 0) * size * 0.6
@@ -23,7 +32,7 @@ export function measure(text: string, isMono: boolean, size: number): number {
     // Wide East Asian characters (Hangul, kana, Han) and emoji are about one em wide,
     // nearly twice a Latin letter; combining marks and joiners take no room (#66).
     if (cells !== 1) {
-      return sum + cells * size * 0.5
+      return sum + cells * size * 0.62
     }
 
     if ('iljtf.,:;|!\'` '.includes(char)) {
@@ -35,7 +44,7 @@ export function measure(text: string, isMono: boolean, size: number): number {
     }
 
     return sum + (char >= 'A' && char <= 'Z' ? size * 0.64 : size * 0.54)
-  }, 0)
+  }, 0) * SANS_SLACK
 }
 
 export function fitText(text: string, width: number, isMono: boolean, size: number): string {
