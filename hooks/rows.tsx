@@ -2,7 +2,7 @@ import type { ElementTable, RenderSurface } from 'claude-code'
 
 import type { Prefs, Touch, TurnStats } from '../types'
 import { formatDuration, formatMs } from './format'
-import { columnWidths, hardBreaks, isShell, tableArt, widthOf, wrapLines } from './markdown'
+import { columnWidths, hardBreaks, isShell, widthOf, wrapLines } from './markdown'
 import { diffFenceTag, diffRows, fenceDiff, newOnly } from './diff-fence'
 import { FOLD_CODE, FOLD_ROWS, foldButton, shownCount } from './fold'
 import type { Segment, Table } from './markdown'
@@ -29,6 +29,8 @@ import { terminalSvg } from './svg-terminal'
 import type { ShellOutput } from './svg-terminal'
 import { metersKey, usageLine, usageSvg } from './svg-usage'
 import { codeRows } from './code-rows'
+import { kindColor, liveSvg } from './live'
+import type { LiveChip, LiveTurn } from './live'
 import { languageOf } from './highlight'
 import type { Meter } from './svg-usage'
 import { kindOf, toolLabel } from './tools'
@@ -403,7 +405,7 @@ const sourceOf = (look: Look, key: string, built: { source: string; entranceMs: 
 // left free. The image cannot be pressed, so the button is a real one on top of it; the
 // box hugs the image so the corner is the card's, not the column's. The image takes the
 // markup's own size, so one drawn wider than the reply column is scaled down to fit it.
-function cardWithCopy(look: Look, Svg: SvgElement, built: { source: string; alt: string; entranceMs: number }, key: string, text: string) {
+function cardWithCopy(look: Look, Svg: SvgElement, built: { source: string; alt: string; entranceMs: number }, key: string, text: string, top = 1) {
   const { Box, Button } = look.ui
   const copy = look.copy
 
@@ -413,15 +415,15 @@ function cardWithCopy(look: Look, Svg: SvgElement, built: { source: string; alt:
       {copy === undefined ? (
         ''
       ) : (
-        <Box position="absolute" top={1} right={3}>
-          <Button key={key} label="Copiar" plain dimColor onPress={() => copy(text)} />
+        <Box position="absolute" top={top} right={3} {...(top === 0 ? { paddingTop: 'md' as const } : {})}>
+          <Button key={key} label="📋" plain dimColor onPress={() => copy(text)} />
         </Box>
       )}
     </Box>
   )
 }
 
-// Copy takes the markdown; `as text` under the card takes the table as drawn.
+// Copy takes the table as markdown.
 function tableCard(look: Look, table: Table, Svg: SvgElement, columns: number, key: string) {
   const { Box } = look.ui
   const card = tableSvg(table, look.skin.palette, cardWidth(columns), look.copy !== undefined)
@@ -429,23 +431,16 @@ function tableCard(look: Look, table: Table, Svg: SvgElement, columns: number, k
   return (
     <Box flexDirection="column">
       {cardWithCopy(look, Svg, card, key, tableMarkdown(table))}
-      {copyRow(look, `${key}-art`, tableArt(table), 'Copiar como texto')}
     </Box>
   )
 }
 
-// The table's two copies on its frame: markdown, and the table as drawn.
+// The table's Copy on its frame, as markdown.
 function tableControls(look: Look, key: string, table: Table) {
   const { Box } = look.ui
   const markdown = copyButton(look, key, tableMarkdown(table))
-  const art = copyButton(look, `${key}-art`, tableArt(table), ' como texto ')
 
-  return markdown === undefined || art === undefined ? undefined : (
-    <Box flexDirection="row">
-      {markdown}
-      {art}
-    </Box>
-  )
+  return markdown === undefined ? undefined : <Box flexDirection="row">{markdown}</Box>
 }
 
 function mathCard(look: Look, tex: string, Svg: SvgElement, columns: number, key: string) {
@@ -642,7 +637,7 @@ function drawingOf(look: Look, segment: Segment & { kind: 'code' }, maxWidth: nu
 function diffFence(look: Look, diff: DiffInput, code: string, maxWidth: number, i: number, Svg?: SvgElement, fenceLang?: string) {
   const { Box } = look.ui
   const whole = copyButton(look, `copy-${i}`, code)
-  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' só o código novo ')
+  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' Só o código novo ')
 
   if (Svg !== undefined) {
     return (
@@ -779,7 +774,7 @@ export function replyRows(look: Look, segments: readonly Segment[], maxWidth: nu
           </Box>
         ),
       )}
-      {whole === undefined ? '' : copyRow(look, 'copy-reply', whole, 'copiar resposta')}
+      {whole === undefined ? '' : copyRow(look, 'copy-reply', whole, 'Copiar resposta')}
     </Box>
   )
 }
@@ -819,18 +814,99 @@ export function spinnerRow(look: Look, word: string, frame: number, elapsedMs: n
   )
 }
 
+// Counts with an icon each, so the band stays short: ✏️ files edited, ▶ commands, 🔧 tools.
+function turnFacts(look: Look, stats: TurnStats, failed: number) {
+  const { Text } = look.ui
+  const { palette } = look.skin
+  const parts = [
+    ...(stats.files ? [`✏️ ${stats.files}`] : []),
+    ...(stats.commands ? [`▶ ${stats.commands}`] : []),
+    ...(stats.tools ? [`🔧 ${stats.tools}`] : []),
+  ]
+  const hasDiff = stats.added + stats.removed > 0
+
+  return (
+    <Text color={palette.muted}>
+      {parts.length > 0 ? `  ·  ${parts.join('   ')}` : ''}
+      {failed > 0 ? <Text color={palette.err}>{`   ✖ ${failed}`}</Text> : ''}
+      {hasDiff ? '  ·  ' : ''}
+      {hasDiff ? <Text color={palette.ok}>{`+${stats.added}`}</Text> : ''}
+      {hasDiff ? <Text color={palette.err}>{` −${stats.removed}`}</Text> : ''}
+    </Text>
+  )
+}
+
+// The dot and chips: an image on the desktop, glyphs on the terminal.
+function turnMarks(look: Look, live: Pick<LiveTurn, 'chips' | 'current'>, isDone: boolean) {
+  const { Text } = look.ui
+  const { palette } = look.skin
+  const Svg = look.svg
+
+  if (Svg !== undefined) {
+    const built = liveSvg(live, palette, isDone)
+    return <Svg key="live" source={built.source} alt={built.alt} width={built.width} height={built.height} />
+  }
+
+  return (
+    <Text color={isDone ? palette.ok : palette.user}>
+      {isDone ? '✓ ' : '● '}
+      {live.chips.slice(-14).map(chip => <Text color={kindColor(palette, chip.kind, chip.failed)}>•</Text>)}
+    </Text>
+  )
+}
+
+// The turn as it runs: how long, what it is doing (the last call, dim and ticked, until the
+// next starts, so a fast one stays readable), and the counts so far.
+export function liveRow(look: Look, live: LiveTurn, now: number) {
+  const { Box, Text } = look.ui
+  const { palette } = look.skin
+  const current = live.current
+  const color = current === null ? palette.user : kindColor(palette, current.kind)
+
+  return (
+    <Box flexDirection="row" alignItems="center" columnGap={1}>
+      {turnMarks(look, live, false)}
+      <Text color={palette.muted} wrap="truncate-end">
+        <Text color={palette.fg} bold>{formatDuration(Math.max(0, now - live.startedAt))}</Text>
+        {'  ·  '}
+        {current === null ? <Text color={palette.user}>💭 Pensando</Text> : <Text color={color} dimColor={current.done === true}>{`${current.label}${current.done === true ? ' ✓' : ''}`}</Text>}
+        {turnFacts(look, live.stats, live.chips.filter(chip => chip.failed).length)}
+      </Text>
+    </Box>
+  )
+}
+
+// The last turn, between turns: a still tick, its chips, how long it took and its counts.
+export function lastTurnRow(look: Look, durationMs: number, stats: TurnStats, chips: readonly LiveChip[] = []) {
+  const { Box, Text } = look.ui
+  const { palette } = look.skin
+
+  return (
+    <Box flexDirection="row" alignItems="center" columnGap={1}>
+      {turnMarks(look, { chips: [...chips], current: null }, true)}
+      <Text color={palette.muted} wrap="truncate-end">
+        <Text color={palette.fg} bold>{`Pronto em ${formatDuration(durationMs)}`}</Text>
+        {turnFacts(look, stats, chips.filter(chip => chip.failed).length)}
+      </Text>
+    </Box>
+  )
+}
+
 export function footerRow(look: Look, word: string, durationMs: number, stats: TurnStats | undefined) {
   const { Text } = look.ui
   const { palette } = look.skin
-  const facts = [
-    ...(stats === undefined || stats.tools === 0 ? [] : [`${stats.tools} tool${stats.tools === 1 ? '' : 's'}`]),
+  const count = (n: number | undefined, one: string, many: string): string[] => (n === undefined || n === 0 ? [] : [`${n} ${n === 1 ? one : many}`])
+  const facts = stats === undefined ? [] : [
+    ...count(stats.files, 'arquivo editado', 'arquivos editados'),
+    ...count(stats.commands, 'comando', 'comandos'),
+    ...count(stats.tools, 'ferramenta', 'ferramentas'),
   ]
   const hasDiff = stats !== undefined && stats.added + stats.removed > 0
 
   return (
     <Text color={palette.muted}>
       <Text color={palette.user}>{`${look.icons.done} `}</Text>
-      {`${word} in ${formatDuration(durationMs)}`}
+      {`${word} em ${formatDuration(durationMs)}`}
       {facts.length > 0 ? `  ·  ${facts.join('  ·  ')}` : ''}
       {hasDiff ? '  ·  ' : ''}
       {hasDiff ? <Text color={palette.ok}>{`+${stats.added}`}</Text> : ''}
@@ -873,7 +949,7 @@ export function codeCard(look: Look, lang: string, code: string, Svg: SvgElement
   const { Box } = look.ui
   const count = code.split('\n').length
   const shown = shownCount(look, foldKey, count, FOLD_CODE)
-  const card = cardWithCopy(look, Svg, codeSvg(code, lang, look.skin.palette, cardWidth(columns), look.copy !== undefined, shown === count ? undefined : shown), key, code)
+  const card = cardWithCopy(look, Svg, codeSvg(code, lang, look.skin.palette, cardWidth(columns), look.copy !== undefined, shown === count ? undefined : shown), key, code, 0)
 
   return look.folds === undefined || count <= FOLD_CODE ? (
     card

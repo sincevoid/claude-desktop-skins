@@ -14,7 +14,9 @@ import { disclosedRow, openedRows } from './detail-rows'
 import { copyOf } from './markdown'
 import { CHART_HINT } from './mermaid'
 import { commandSegments } from './command-output'
-import { askBand, desktopSpinnerRow, diffCard, footerRow, terminalCard, usageBand, groupRow, promptRow, quietResult, replyRows, spinnerRow, toolRow } from './rows'
+import { actionOf, MAX_CHIPS } from './live'
+import type { LiveChip, LiveTurn } from './live'
+import { askBand, desktopSpinnerRow, diffCard, footerRow, lastTurnRow, liveRow, terminalCard, usageBand, groupRow, promptRow, quietResult, replyRows, spinnerRow, toolRow } from './rows'
 import type { Look, SvgElement, Ui } from './rows'
 import { galleryPane } from './gallery'
 import { keepsOwnRow, SHELLS, shellResultOf } from './shell'
@@ -51,6 +53,8 @@ const CLIP_TAIL = 4
 const FRAME_MS = 90
 // Countdowns read to the minute, so they are looked at once a minute.
 const COUNTDOWN_MS = 60_000
+// A turn at least this long sends a system notification when it ends.
+const NOTIFY_MS = 60_000
 const SETTLE_LEAD_MS = FRAME_MS
 const FAST_RETRIES = 4
 const RETRY_MAX_MS = 1000
@@ -92,6 +96,9 @@ const touchedAtom = atom({ plugin: 'skins', key: 'touched' } as const, {} as Rec
 const foldsAtom = atom({ plugin: 'skins', key: 'folds' } as const, [] as string[])
 // The main loop's last answer, for `/skin copy`.
 const lastReplyAtom = atom({ plugin: 'skins', key: 'lastReply' } as const, '')
+const liveAtom = atom({ plugin: 'skins', key: 'live' } as const, null as LiveTurn | null)
+const tickAtom = atom({ plugin: 'skins', key: 'tick' } as const, 0)
+const lastTurnAtom = atom({ plugin: 'skins', key: 'lastTurn' } as const, null as { durationMs: number; stats: TurnStats; chips?: LiveChip[] } | null)
 
 const EDITS = new Set(['Edit', 'MultiEdit', 'Write'])
 const WRITES = new Set([...EDITS, 'NotebookEdit'])
@@ -102,7 +109,7 @@ const TYPED = new Set(['composer', 'bridge', 'sdk'])
 
 type Active = { prefs: Prefs; skin: Skin; custom: Record<string, CustomSkin> }
 
-const NO_STATS: TurnStats = { tools: 0, added: 0, removed: 0 }
+const NO_STATS: TurnStats = { tools: 0, added: 0, removed: 0, files: 0, commands: 0 }
 
 async function activeSkin($: EngineInterface): Promise<Active | null> {
   const prefs = await read($, prefsAtom)
@@ -674,9 +681,12 @@ export const register: Register = on => {
 
   // What the turn on the main loop has done so far, for its footer.
   let stats: TurnStats = NO_STATS
+  // The files this turn wrote, so the footer counts each one once.
+  let filesThisTurn = new Set<string>()
   let isWorking = false
   let ticker: Timer | undefined
   let countdownTicker: Timer | undefined
+  let liveTicker: Timer | undefined
   // The width the last reply was drawn at, shown by /skin list to tune table sizing.
   let lastColumns: number | undefined
 
@@ -732,6 +742,13 @@ export const register: Register = on => {
         void settleEntrances($)
       }
     })
+    // The live band's clock: one redraw a second while a turn runs.
+    liveTicker?.cancel()
+    liveTicker = $.clock.every(1000, () => {
+      if (isWorking) {
+        void update($, tickAtom, tick => tick + 1)
+      }
+    })
     countdownTicker?.cancel()
     countdownTicker = $.clock.every(COUNTDOWN_MS, () => {
       void tickCountdowns($).catch((error: unknown) => {
@@ -762,7 +779,12 @@ export const register: Register = on => {
 
   on('turn.start', async ($, e, next) => {
     stats = NO_STATS
+    filesThisTurn = new Set<string>()
     isWorking = true
+    if (e.agentId === undefined) {
+      const startedAt = await $.clock.now()
+      await update($, liveAtom, () => ({ startedAt, current: null, chips: [], stats: NO_STATS }))
+    }
     // A worktree can move the session between turns.
     sessionCwd = await $.session.cwd()
     hasTouched = false
@@ -815,6 +837,16 @@ export const register: Register = on => {
         Object.fromEntries([...Object.entries(turns), [turnKey(e.durationMs), finished]].slice(-KEPT_TURNS)),
       )
 
+      const chips = (await read($, liveAtom))?.chips ?? []
+      await update($, lastTurnAtom, () => ({ durationMs: e.durationMs, stats: finished, chips }))
+      await update($, liveAtom, () => null)
+
+      // A long turn says it is done where the person is, not only in the window.
+      if (e.durationMs >= NOTIFY_MS) {
+        const parts = [`${Math.round(e.durationMs / 1000)}s`, ...(finished.files ? [`${finished.files} arquivo(s) editado(s)`] : []), ...(finished.commands ? [`${finished.commands} comando(s)`] : [])]
+        await $.ui.notify({ title: 'Claude terminou', text: parts.join(' · ') }).catch(logDebug)
+      }
+
       if (e.answer.trim() !== '') {
         await update($, lastReplyAtom, () => e.answer)
       }
@@ -829,6 +861,13 @@ export const register: Register = on => {
     if (SHELLS.has(e.tool)) {
       const command = commandOf(e)
       await update($, memberOf(commandAtom, { requestId: e.tool_use_id }), () => command)
+    }
+
+    const isMain = e.agentId === undefined && e.tool !== DESIGN
+
+    if (isMain) {
+      const action = actionOf(e.tool, e as unknown as Record<string, unknown>)
+      await update($, liveAtom, live => (live === null ? live : { ...live, current: action }))
     }
 
     const startedAt = await $.clock.now()
@@ -853,11 +892,24 @@ export const register: Register = on => {
 
     if (e.agentId === undefined && e.tool !== DESIGN && ran.deny === undefined) {
       const diff = diffstat(ran.result)
+
+      if (WRITES.has(e.tool) && typeof file === 'string' && file !== '') {
+        filesThisTurn.add(file)
+      }
+
       stats = {
+        files: filesThisTurn.size,
+        commands: (stats.commands ?? 0) + (e.tool === 'Bash' || e.tool === 'PowerShell' ? 1 : 0),
         tools: stats.tools + 1,
         added: stats.added + (diff?.added ?? 0),
         removed: stats.removed + (diff?.removed ?? 0),
       }
+    }
+
+    if (isMain) {
+      const failed = ran.deny !== undefined || (ran as { isError?: boolean }).isError === true
+      const action = actionOf(e.tool, e as unknown as Record<string, unknown>)
+      await update($, liveAtom, live => (live === null ? live : { ...live, current: { ...action, done: true }, stats, chips: [...live.chips, { kind: action.kind, failed }].slice(-MAX_CHIPS) }))
     }
 
     return ran
@@ -1308,13 +1360,34 @@ export const register: Register = on => {
     const countdowns = active?.prefs.countdown === true ? (await read($, countdownsAtom), countdownsOf(usage, await $.clock.now())) : {}
     const meters = metersOf(usage, countdowns)
 
-    if (active === null || !active.prefs.band || e.props.hasSurvey || meters.length === 0) {
+    const lastTurn = await read($, lastTurnAtom)
+    const live = await read($, liveAtom)
+    const isLive = active !== null && live !== null && e.props.isWorking
+    // Read so the band redraws each second while live; the clock is what it shows.
+    const now = isLive ? (await read($, tickAtom), await $.clock.now()) : 0
+    const hasBand = active !== null && active.prefs.band && meters.length > 0
+    // The last turn's summary shows between turns; the desktop draws no turn footer of its own.
+    const hasSummary = isLive || (active !== null && lastTurn !== null && !e.props.isWorking)
+
+    if (active === null || e.props.hasSurvey || (!hasBand && !hasSummary)) {
       return next(e)
     }
 
     const plain = lookOf($.ui.resolve(e), active, e.surface)
     const { Box } = plain.ui
     const theirs = await next(e)
+    const summary = isLive && live !== null
+      ? liveRow(plain, live, now)
+      : hasSummary && lastTurn !== null ? lastTurnRow(plain, lastTurn.durationMs, lastTurn.stats, lastTurn.chips ?? []) : ''
+
+    if (!hasBand) {
+      return (
+        <Box flexDirection="column">
+          {summary}
+          {theirs}
+        </Box>
+      )
+    }
     // Compacting mid-turn would cut the turn's own context out from under it.
     // Runs Claude Code's own /compact, so the person sees its usual progress and result.
     // Work a press starts is abandoned when the press ends, which cancels a compaction
@@ -1337,6 +1410,7 @@ export const register: Register = on => {
       $,
       e,
       <Box flexDirection="column">
+        {summary}
         {usageBand(look, meters, active.prefs.compact && !e.props.isWorking && !isCompacting, compact)}
         {theirs}
       </Box>,

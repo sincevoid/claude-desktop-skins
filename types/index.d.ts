@@ -87,7 +87,7 @@ export type CustomSkin = {
 export type UsageSnap = { context: number | null; limits: { label: string; percent: number; resetsAt?: number }[] }
 
 // What one turn did, shown in its footer.
-export type TurnStats = { tools: number; added: number; removed: number }
+export type TurnStats = { tools: number; added: number; removed: number; files?: number; commands?: number }
 
 // What this turn did to a file: made it, or changed one that was there.
 export type Touch = 'created' | 'edited'
@@ -122,6 +122,11 @@ declare module 'claude-code' {
       startedAt: number
       frame: number
       turns: Record<string, TurnStats>
+      // The main loop's last finished turn, for its summary in the band above the prompt.
+      lastTurn: { durationMs: number; stats: TurnStats; chips?: import('../hooks/live').LiveChip[] } | null
+      // The main loop's turn while it runs, and a second's tick that redraws its clock.
+      live: import('../hooks/live').LiveTurn | null
+      tick: number
       duration: StateFamily<number>
       editing: SkinSlot
       usage: UsageSnap
