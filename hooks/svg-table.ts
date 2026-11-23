@@ -1,7 +1,8 @@
+import { inlineRuns } from './blocks'
 import type { Align, Table } from './markdown'
 import { wrapLines } from './markdown'
 import type { Palette } from './skin'
-import { CONTROL_SLOT, escape, HEADER_MID, measure as measureAt, MONO, riseDelay, staggerEnd, staggerStep, svgCard } from './svg-kit'
+import { CONTROL_SLOT, escape, HEAD_FONT, headFill, HEADER_MID, measure as measureAt, MONO, riseDelay, staggerEnd, staggerStep, svgCard } from './svg-kit'
 
 // A table as an animated vector card in the skin's colours, with no background of its
 // own so the page shows through, for the surfaces that draw `Svg` (the desktop app).
@@ -124,13 +125,69 @@ const anchorOf = (align: Align): string => (align === 'right' ? 'end' : align ==
 const xOf = (left: number, width: number, align: Align): number =>
   align === 'right' ? left + width : align === 'center' ? left + width / 2 : left
 
-type Cell = { kind: CellKind; text: string; lines: string[] }
+// A stretch of a cell's text in one style; `~~text~~` reads faded, as a line through it is
+// hard to read. Marks come from the reader the prose uses, so both read them alike.
+type Run = { text: string; bold: boolean; italic: boolean; faded: boolean }
 
-function layoutCell(text: string, width: number): Cell {
+const runsOf = (line: string): Run[] =>
+  inlineRuns(line).map(run => ({ text: run.text, bold: run.style === 'bold', italic: run.style === 'italic', faded: run.style === 'strike' }))
+
+const plainOf = (runs: readonly Run[]): string => runs.map(run => run.text).join('')
+
+type Cell = { kind: CellKind; text: string; lines: string[]; runs?: Run[][] }
+
+const widthOfRun = (run: Run): number => measure(run.text, false) * (run.bold ? 1.08 : 1)
+
+// Wraps styled runs between words, as wrapCell does plain text; a long word keeps its line.
+function wrapRuns(runs: readonly Run[], width: number): Run[][] {
+  const lines: Run[][] = []
+  let line: Run[] = []
+  let used = 0
+
+  for (const run of runs) {
+    for (const piece of run.text.split(/(\s+)/).filter(part => part !== '')) {
+      const word = { ...run, text: piece }
+      const w = widthOfRun(word)
+      const isSpace = /^\s+$/.test(piece)
+
+      if (!isSpace && used + w > width && line.length > 0) {
+        lines.push(line)
+        line = []
+        used = 0
+      }
+
+      if (isSpace && line.length === 0) {
+        continue
+      }
+
+      line.push(word)
+      used += w
+    }
+  }
+
+  if (line.length > 0) {
+    lines.push(line)
+  }
+
+  return lines.length === 0 ? [[]] : lines
+}
+
+function layoutCell(text: string, width: number, rich?: string): Cell {
   const kind = kindOfCell(text)
   const isWrapped = kind === 'text' || kind === 'code'
 
+  // Emphasis or a `<br>` in a text cell: wrapped as styled runs.
+  if (kind === 'text' && rich !== undefined && /\*|~~|\n/.test(rich)) {
+    const runs = rich.split('\n').flatMap(hard => wrapRuns(runsOf(hard.trim()), width))
+    return { kind, text, lines: runs.map(line => plainOf(line).trim()), runs }
+  }
+
   return { kind, text, lines: isWrapped ? wrapCell(text, width, kind === 'code') : [text] }
+}
+
+const runMarkup = (run: Run): string => {
+  const style = [run.bold ? 'font-weight:700' : '', run.italic ? 'font-style:italic' : '', run.faded ? 'fill-opacity:.45' : ''].filter(Boolean).join(';')
+  return style === '' ? escape(run.text) : `<tspan style="${style}">${escape(run.text)}</tspan>`
 }
 
 function cellMarkup(cell: Cell, left: number, width: number, align: Align, rowH: number, palette: Palette): string {
@@ -150,6 +207,15 @@ function cellMarkup(cell: Cell, left: number, width: number, align: Align, rowH:
     const [, added = '0', removed = '0'] = DIFF.exec(cell.text.trim()) ?? []
 
     return `<text x="${xOf(left, width, align)}" y="${middle + 5}" text-anchor="${anchorOf(align)}" ${font}><tspan fill="${palette.ok}">+${added}</tspan><tspan fill="${palette.muted}"> </tspan><tspan fill="${palette.err}">−${removed}</tspan></text>`
+  }
+
+  if (cell.runs !== undefined) {
+    return cell.runs
+      .map(
+        (runs, i) =>
+          `<text x="${xOf(left, width, align)}" y="${firstY + i * LINE_H}" text-anchor="${anchorOf(align)}" fill="${palette.fg}" xml:space="preserve">${runs.map(runMarkup).join('')}</text>`,
+      )
+      .join('')
   }
 
   return cell.lines
@@ -196,7 +262,7 @@ export function tableSvg(table: Table, palette: Palette, width: number, hasContr
   const labels = table.header.map((cell, i) => wrapLines(cell.toUpperCase(), labelWidth(i), Infinity, measureHead))
   const headerH = HEADER_H + (Math.max(1, ...labels.map(lines => lines.length)) - 1) * HEAD_LINE_H
 
-  const laid = table.rows.map(row => row.map((cell, i) => layoutCell(cell, (widths[i] ?? MIN_COL) - (kindOfCell(cell) === 'colour' ? 22 : 0))))
+  const laid = table.rows.map((row, r) => row.map((cell, i) => layoutCell(cell, (widths[i] ?? MIN_COL) - (kindOfCell(cell) === 'colour' ? 22 : 0), table.rich?.[r]?.[i])))
   const heights = laid.map(cells => Math.max(MIN_ROW_H, Math.max(...cells.map(cell => cell.lines.length)) * LINE_H + ROW_PAD_Y * 2))
   const tops = heights.map((_, r) => headerH + heights.slice(0, r).reduce((sum, h) => sum + h, 0))
   const height = headerH + heights.reduce((sum, h) => sum + h, 0) + 6
@@ -223,7 +289,7 @@ export function tableSvg(table: Table, palette: Palette, width: number, hasContr
 
   const style = [
     `text{font-size:${SIZE}px}`,
-    `.head{font-size:${HEAD_SIZE}px;font-weight:600;letter-spacing:.1em;fill:${palette.muted}}`,
+    `.head{font-family:${HEAD_FONT};font-size:${HEAD_SIZE}px;font-weight:600;letter-spacing:.08em;${headFill(palette)}}`,
     `.num{font-variant-numeric:tabular-nums}`,
     `.row{opacity:0;animation:rise ${ROW_RISE_MS}ms cubic-bezier(.2,.8,.2,1) forwards}`,
     `.rule{stroke-dasharray:${cardWidth};stroke-dashoffset:${cardWidth};animation:draw ${RULE_MS}ms cubic-bezier(.6,0,.2,1) ${RULE_DELAY_MS}ms forwards}`,

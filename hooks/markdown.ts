@@ -1,9 +1,13 @@
 // Finds the tables and fenced code in a reply so they can be drawn as cards; the rest
 // stays markdown.
 
+import { inlineRuns } from './blocks'
+
 export type Align = 'left' | 'right' | 'center'
 
-export type Table = { kind: 'table'; header: string[]; align: Align[]; rows: string[][] }
+// `rich` keeps each body cell's bold, italic, strikethrough and `<br>` breaks for the desktop
+// card; `rows` holds the plain text everything else measures, copies and draws.
+export type Table = { kind: 'table'; header: string[]; align: Align[]; rows: string[][]; rich?: string[][] }
 
 // `raw` is the fence as written, for the surfaces that keep Claude Code's own drawing.
 export type Code = { kind: 'code'; lang: string; code: string; raw: string }
@@ -47,9 +51,25 @@ export function hardBreaks(markdown: string): string {
     .join('\n')
 }
 
-// Inline emphasis and code ticks read as noise in a padded cell.
-const clean = (cell: string): string =>
-  cell.replace(/\*\*|__|`/g, '').replace(/\\\|/g, '|').trim()
+const BR = /<br\s*\/?>/gi
+export const LINK = /\[([^\]]+)\]\([^)]*\)/g
+
+// Inline marks and link targets read as noise in a padded cell; a link keeps its text.
+const clean = (cell: string): string => plainOf(cell.replace(BR, ' ')).replace(/\\\|/g, '|').trim()
+
+// A cell's text with its marks dropped, read by the same rules that draw them.
+export const plainOf = (text: string): string => inlineRuns(text.replace(LINK, '$1')).map(run => run.text).join('')
+
+// The same cell with its emphasis kept and `<br>` as a line break; code ticks and link
+// targets still go, as they cannot work inside an image.
+const richClean = (cell: string): string =>
+  cell.replace(BR, '\n').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/`/g, '').replace(/\\\|/g, '|').trim()
+
+export function richCellsOf(line: string): string[] {
+  const inner = line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '')
+
+  return inner.split(/(?<!\\)\|/).map(richClean)
+}
 
 export function cellsOf(line: string): string[] {
   const inner = line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '')
@@ -150,15 +170,17 @@ export function splitReply(markdown: string, options: SplitOptions = SPLIT_ALL):
     flush()
 
     const rows: string[][] = []
+    const rich: string[][] = []
     i += 2
 
     while (i < lines.length && (lines[i] ?? '').includes('|') && (lines[i] ?? '').trim() !== '') {
       rows.push(fit(cellsOf(lines[i] ?? ''), header.length))
+      rich.push(fit(richCellsOf(lines[i] ?? ''), header.length))
       i++
     }
 
     i--
-    segments.push({ kind: 'table', header, align: cellsOf(next).map(alignOf), rows })
+    segments.push({ kind: 'table', header, align: cellsOf(next).map(alignOf), rows, rich })
   }
 
   flush()
