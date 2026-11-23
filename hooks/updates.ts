@@ -1,8 +1,8 @@
 // Whether an installed copy is behind. A release is the version bump on main, so main's
 // plugin.json is the latest. register.tsx does the fetching, since $ stays in that file.
-export const LATEST_URL = 'https://raw.githubusercontent.com/hellosverre/claude-skins/main/.claude-plugin/plugin.json'
+export const LATEST_URL = 'https://raw.githubusercontent.com/sincevoid/claude-desktop-skins/main/.claude-plugin/plugin.json'
 const DAY_MS = 24 * 60 * 60 * 1000
-const PLUGIN_ID = 'skins@hellosverre-mods'
+const PLUGIN_ID = 'skins@sincevoid'
 
 export type Checked = { at: number }
 
@@ -34,7 +34,7 @@ export function isNewer(latest: string, current: string): boolean {
 }
 
 export const updateNotice = (latest: string, current: string): string =>
-  `skins ${latest} is out (you have ${current}). Run: claude plugin update ${PLUGIN_ID}, then restart`
+  `Saiu a versão ${latest} do Claude Desktop Skins (você tem a ${current}). Rode claude plugin update ${PLUGIN_ID} e reinicie o Claude`
 
 export const isDue = (raw: unknown, now: number): boolean => {
   const at = typeof raw === 'object' && raw !== null ? (raw as Partial<Checked>).at : undefined
@@ -46,7 +46,7 @@ export const isDue = (raw: unknown, now: number): boolean => {
 // kept the skin rather than someone still trying it out.
 const STAR_AFTER_MS = 3 * DAY_MS
 
-export const STAR_NOTICE = 'Enjoying skins? A ★ on GitHub helps others find it: https://github.com/hellosverre/claude-skins'
+export const STAR_NOTICE = 'Curtindo o Claude Desktop Skins? Uma ★ no GitHub ajuda outras pessoas a acharem: https://github.com/sincevoid/claude-desktop-skins'
 
 export type Star = { since: number; asked: boolean }
 
