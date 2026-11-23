@@ -26,9 +26,9 @@ export interface Art {
 
 const KINDS: readonly (readonly [RegExp, string])[] = [
   [/^(flowchart|graph)\b/i, 'Fluxograma'],
-  [/^statediagram(-v2)?\s*$/i, 'Estados'],
-  [/^sequencediagram\s*$/i, 'Sequência'],
-  [/^classdiagram\s*$/i, 'Classes'],
+  [/^statediagram(-v2)?\s*$/i, 'Diagrama de estados'],
+  [/^sequencediagram\s*$/i, 'Diagrama de sequência'],
+  [/^classdiagram\s*$/i, 'Diagrama de classes'],
   [/^erdiagram\s*$/i, 'ER'],
   [/^xychart(-beta)?\b/i, 'Gráfico'],
 ]
@@ -129,7 +129,7 @@ function drawArt(source: string, columns: number, ascii: boolean): Art | null {
       return null
     }
 
-    const grid = kind === 'Fluxograma' || kind === 'Estados' ? reattach(drawn) : drawn
+    const grid = kind === 'Fluxograma' || kind === 'Diagrama de estados' ? reattach(drawn) : drawn
 
     if (grid.length <= MAX_ROWS && grid.every(row => widthOf(row.map(cell => cell.char).join('')) <= room)) {
       return { kind, title, rows: paint(grid, kind) }

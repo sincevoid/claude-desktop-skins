@@ -64,7 +64,7 @@ export function terminalSvg(output: ShellOutput, isErrored: boolean, palette: Pa
         ? { text: 'falhou', color: palette.err }
         : { text: 'ok', color: palette.ok }
 
-  const rows = (lines.length === 0 ? [{ text: 'sem saída', isErr: false, isNote: true }] : lines).map((line, i) => {
+  const rows = (lines.length === 0 ? [{ text: 'nenhuma saída', isErr: false, isNote: true }] : lines).map((line, i) => {
     const top = HEADER_H + 6 + i * LINE_H
 
     if ('fold' in line) {

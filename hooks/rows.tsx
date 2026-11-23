@@ -73,13 +73,13 @@ export type Call = {
 export type Meta = { ms?: number; added?: number; removed?: number }
 
 const KIND_LABEL: Readonly<Record<Kind, string>> = {
-  read: 'Ler',
-  write: 'Editar',
-  run: 'Rodar',
-  search: 'Buscar',
+  read: 'Leu',
+  write: 'Editou',
+  run: 'Executou',
+  search: 'Buscou',
   web: 'Web',
   mcp: 'MCP',
-  other: 'Outro',
+  other: 'Outros',
 }
 
 const CELL_PAD = 1
@@ -642,7 +642,7 @@ function drawingOf(look: Look, segment: Segment & { kind: 'code' }, maxWidth: nu
 function diffFence(look: Look, diff: DiffInput, code: string, maxWidth: number, i: number, Svg?: SvgElement, fenceLang?: string) {
   const { Box } = look.ui
   const whole = copyButton(look, `copy-${i}`, code)
-  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' só o novo ')
+  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' só o código novo ')
 
   if (Svg !== undefined) {
     return (
@@ -949,7 +949,7 @@ export function usageBand(look: Look, meters: readonly Meter[], canCompact: bool
       <Box flexDirection="row" alignItems="center" columnGap={3} justifyContent="space-evenly" flexGrow={1}>
         {meterView(look, meters)}
       </Box>
-      {canCompact && isNudge ? <Text color={palette.warn}>{`Contexto ${context}% cheio`}</Text> : ''}
+      {canCompact && isNudge ? <Text color={palette.warn}>{`Contexto em ${context}%`}</Text> : ''}
       {canCompact ? (
         // A digit hotkey: typed alone into an empty prompt it presses the band's button, which
         // is the only way in where the terminal reports no clicks. `plain` shows it: `0: Compact`.

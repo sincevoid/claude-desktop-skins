@@ -339,13 +339,13 @@ export function chartHeading(chart: Chart): { kind: string; count: string } {
     case 'xy':
       return { kind: 'Gráfico', count: chart.series.length > 1 ? `${chart.series.length} séries` : plural(chart.labels.length, 'ponto') }
     case 'pie':
-      return { kind: 'Pizza', count: plural(chart.slices.length, 'fatia') }
+      return { kind: 'Gráfico de pizza', count: plural(chart.slices.length, 'fatia') }
     case 'gantt':
       return { kind: 'Gantt', count: plural(chart.tasks.length, 'tarefa') }
     case 'timeline':
       return { kind: 'Linha do tempo', count: plural(chart.periods.length, 'período') }
     case 'journey':
-      return { kind: 'Jornada', count: plural(chart.steps.length, 'passo') }
+      return { kind: 'Jornada do usuário', count: plural(chart.steps.length, 'passo') }
     case 'kanban':
       return { kind: 'Kanban', count: plural(chart.columns.reduce((sum, column) => sum + column.cards.length, 0), 'cartão', 'cartões') }
     case 'mindmap':
@@ -357,11 +357,11 @@ export function chartHeading(chart: Chart): { kind: string; count: string } {
     case 'sankey':
       return { kind: 'Sankey', count: plural(chart.links.length, 'fluxo') }
     case 'git':
-      return { kind: 'Grafo do Git', count: plural(chart.commits.length, 'commit') }
+      return { kind: 'Git graph', count: plural(chart.commits.length, 'commit') }
     case 'treemap':
       return { kind: 'Treemap', count: plural(chart.leaves, 'item', 'itens') }
     case 'packet':
-      return { kind: 'Pacote', count: plural(chart.bits, 'bit') }
+      return { kind: 'Packet', count: plural(chart.bits, 'bit') }
     case 'block':
       return { kind: 'Diagrama de blocos', count: plural(chart.boxes, 'bloco') }
     case 'architecture':

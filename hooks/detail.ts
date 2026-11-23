@@ -43,7 +43,7 @@ const LABELS: Readonly<Record<string, string>> = {
   notebook_path: 'caminho',
   run_in_background: 'segundo plano',
   output_mode: 'modo',
-  '-i': 'ignora maiúsculas',
+  '-i': 'sem diferenciar maiúsculas',
   '-n': 'número da linha',
   '-A': 'depois',
   '-B': 'antes',

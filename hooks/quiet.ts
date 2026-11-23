@@ -233,7 +233,7 @@ export function quietLabel(tool: string): string {
       return 'Listou'
     case 'Bash':
     case 'PowerShell':
-      return 'Olhou'
+      return 'Consultou'
     default:
       return tool
   }

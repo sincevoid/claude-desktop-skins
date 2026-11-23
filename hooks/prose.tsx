@@ -8,10 +8,10 @@ import type { Palette } from './skin'
 type Glyphs = { mark: string; done: string; open: string }
 
 const ALERTS: Record<AlertType, { title: string; slot: keyof Palette; unicode: string; ascii: string }> = {
-  note: { title: 'Nota', slot: 'web', unicode: 'ℹ', ascii: 'i' },
+  note: { title: 'Observação', slot: 'web', unicode: 'ℹ', ascii: 'i' },
   tip: { title: 'Dica', slot: 'ok', unicode: '✦', ascii: '*' },
   important: { title: 'Importante', slot: 'mcp', unicode: '❖', ascii: '!' },
-  warning: { title: 'Atenção', slot: 'warn', unicode: '▲', ascii: '!' },
+  warning: { title: 'Aviso', slot: 'warn', unicode: '▲', ascii: '!' },
   caution: { title: 'Cuidado', slot: 'err', unicode: '✖', ascii: 'x' },
 }
 

@@ -808,7 +808,7 @@ test('a pie parses its slices, and its heading counts them', async () => {
     { label: 'Dogs', value: 386 },
     { label: 'Cats', value: 85.5 },
   ])
-  expect(chartHeading(pie)).toEqual({ kind: 'Pizza', count: '2 fatias' })
+  expect(chartHeading(pie)).toEqual({ kind: 'Gráfico de pizza', count: '2 fatias' })
 })
 
 test('chart cards draw in the skin, and a flowchart too wide for its card is left to the code card', async () => {
@@ -895,7 +895,7 @@ test('a journey scores each step and gathers its actors', async () => {
     ['Make tea', 5, ['Me']],
     ['Do work', 1, ['Me', 'Cat']],
   ])
-  expect(chartHeading(journey)).toEqual({ kind: 'Jornada', count: '2 passos' })
+  expect(chartHeading(journey)).toEqual({ kind: 'Jornada do usuário', count: '2 passos' })
 })
 
 test('a kanban reads columns, cards and their metadata', async () => {
@@ -983,7 +983,7 @@ test('a git graph tracks branches, merges and cherry-picks', async () => {
   expect(merge?.tag).toBe('v1')
   expect(merge?.parents).toEqual([git.commits[2]?.id, 'feat'])
   expect(git.commits[4]?.from).toBe('feat')
-  expect(chartHeading(git)).toEqual({ kind: 'Grafo do Git', count: '5 commits' })
+  expect(chartHeading(git)).toEqual({ kind: 'Git graph', count: '5 commits' })
 })
 
 test('a treemap nests by indent and sums each section from its leaves', async () => {
@@ -1019,7 +1019,7 @@ test('a packet reads ranges, single bits and +n fields end to end', async () => 
     { start: 32, end: 32, label: 'Flag' },
     { start: 33, end: 39, label: 'Rest' },
   ])
-  expect(chartHeading(packet)).toEqual({ kind: 'Pacote', count: '40 bits' })
+  expect(chartHeading(packet)).toEqual({ kind: 'Packet', count: '40 bits' })
 })
 
 test('a packet field too narrow for its name is named in full under the art', async () => {
