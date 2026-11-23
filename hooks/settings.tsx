@@ -103,7 +103,7 @@ export function settingsPane(look: Look, ui: PaneUi, model: SettingsModel, actio
       {preview(look, model.width)}
 
       <Box flexDirection="row" flexWrap="wrap" columnGap={2}>
-        <Text color={palette.muted}>Look</Text>
+        <Text color={palette.muted}>Visual</Text>
         {toggle('rail', 'r', prefs.rail)}
         <Button
           key="tables"
@@ -151,7 +151,7 @@ export function settingsPane(look: Look, ui: PaneUi, model: SettingsModel, actio
         <Box flexDirection="row" columnGap={2} marginTop={1}>
           <Select
             key="slot"
-            label="Colour"
+            label="Cor"
             value={model.editing}
             options={SLOTS.map(slot => ({ value: slot, label: slot }))}
             onSelect={(value: string) => actions.edit(value as SkinSlot)}
@@ -161,14 +161,14 @@ export function settingsPane(look: Look, ui: PaneUi, model: SettingsModel, actio
             label={colourOf(palette, model.editing)}
             placeholder="#rrggbb"
             value=""
-            submitLabel="paint"
+            submitLabel="pintar"
             onSubmit={(value: string) => actions.paint(value.trim())}
           />
         </Box>
       </Box>
 
       <Text color={palette.muted}>
-        Or ask Claude: <Text color={palette.fg}>“make me a skin that feels like a sunset”</Text>. Esc closes.
+        Ou peça pro Claude: <Text color={palette.fg}>“cria um tema com cara de pôr do sol”</Text>. Esc fecha.
       </Text>
     </Box>
   )

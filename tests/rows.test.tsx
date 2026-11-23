@@ -242,7 +242,7 @@ test('a folded group is one node, an expanded one keeps its rows', async ($, on)
     ({ ...SITE, surface: 'terminal', component: 'ToolGroup', requestId: 'g1', props: { calls, isActive: false, isExpanded } }) as const
 
   const folded = await $.ui.mount(group(false))
-  expect(await folded.find({ type: 'Text', text: /Read 2 · Search 1/ })).toBeDefined()
+  expect(await folded.find({ type: 'Text', text: /Ler 2 · Buscar 1/ })).toBeDefined()
   await folded.unmount()
 
   const expanded = await $.ui.mount(group(true))
@@ -255,7 +255,7 @@ test('a folded group ends in a ▸ that says a click opens it, > with ascii icon
   const calls = [call('Read', {}), call('Read', {}), call('Grep', { pattern: 'x' })]
   const ends = async (mark: string) => {
     const row = await $.ui.mount({ ...SITE, surface: 'terminal', component: 'ToolGroup', requestId: 'g-marker', props: { calls, isActive: false, isExpanded: false } })
-    const found = (await row.find({ type: 'Text', text: new RegExp(`Read 2 · Search 1 +${mark}$`) })) !== undefined
+    const found = (await row.find({ type: 'Text', text: new RegExp(`Ler 2 · Buscar 1 +${mark}$`) })) !== undefined
     const button = (await row.find({ type: 'Button' })) !== undefined
     await row.unmount()
 
@@ -284,7 +284,7 @@ test('/skin expand on hands a folded group to Claude Code opened, /skin expand o
   const calls = [call('Read', {}), call('Read', {}), call('Grep', { pattern: 'x' })]
   const isLine = async () => {
     const row = await $.ui.mount({ ...SITE, surface: 'terminal', component: 'ToolGroup', requestId: 'g1', props: { calls, isActive: false, isExpanded: false } })
-    const found = (await row.find({ type: 'Text', text: /Read 2 · Search 1/ })) !== undefined
+    const found = (await row.find({ type: 'Text', text: /Ler 2 · Buscar 1/ })) !== undefined
     await row.unmount()
 
     return found
@@ -309,7 +309,7 @@ test('/skin expand on: a click on the group’s line folds it to one line, a sec
   // Claude Code flips its flag on each click: it began false, a click makes it true.
   const isLine = async (isExpanded: boolean) => {
     const row = await $.ui.mount({ ...SITE, surface: 'terminal', component: 'ToolGroup', requestId: 'g-click', props: { calls, isActive: false, isExpanded } })
-    const found = (await row.find({ type: 'Text', text: /Read 2 · Search 1/ })) !== undefined
+    const found = (await row.find({ type: 'Text', text: /Ler 2 · Buscar 1/ })) !== undefined
     await row.unmount()
 
     return found
@@ -470,14 +470,14 @@ test('the markdown pack draws alerts and task lists everywhere, headings and par
   const terminal = await $.ui.mount(reply('terminal'))
   expect(await terminal.find({ type: 'Text', text: '▍ Plan' })).toBeDefined()
   expect(spanColor((await terminal.find({ type: 'Text', text: /Ran 54 tests/ })) as Found, '3.2s')).toBe('#f5f5f5')
-  expect(await terminal.find({ type: 'Text', text: '▲ Warning' })).toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: '▲ Atenção' })).toBeDefined()
   expect(JSON.stringify(await terminal.find({ type: 'Box' }))).toContain('"borderStyle":"round"')
   expect(await terminal.find({ type: 'Text', text: '☑ ' })).toBeDefined()
   expect(await terminal.find({ type: 'Text', text: '1/2 done' })).toBeDefined()
   await terminal.unmount()
 
   const desktop = await $.ui.mount(reply('desktop'))
-  expect(await desktop.find({ type: 'Text', text: '▲ Warning' })).toBeDefined()
+  expect(await desktop.find({ type: 'Text', text: '▲ Atenção' })).toBeDefined()
   // The desktop's own markdown sets headings and paragraphs.
   expect(((await desktop.find({ type: 'Markdown' })) as Found)?.props.text).toBe('## Plan\n\nRan 54 tests in 3.2s.')
   await desktop.unmount()
@@ -917,14 +917,14 @@ test('a Mermaid fence is a chart card on the desktop and a laid-out diagram in t
 
   const desktop = await $.ui.mount(chartReply('desktop'))
   const card = (await desktop.find({ type: 'Svg' })) as { props: { source: string; alt: string } } | undefined
-  expect(card?.props.source).toContain('FLOWCHART')
+  expect(card?.props.source).toContain('FLUXOGRAMA')
   expect(card?.props.alt).toContain('Build → Live (ship)')
   await desktop.unmount()
 
   // Boxes drawn in cells, each in a colour of its own, the links quiet.
   const terminal = await $.ui.mount(chartReply('terminal'))
   expect(await terminal.find({ type: 'Svg' })).toBeUndefined()
-  expect(await terminal.find({ type: 'Text', text: 'FLOWCHART' })).toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: 'FLUXOGRAMA' })).toBeDefined()
   const art = (await terminal.findAll({ type: 'Text' })).map(text => JSON.stringify(text.children ?? []))
   expect(art.some(row => row.includes('┌') && row.includes('┐'))).toBe(true)
   expect(art.some(row => row.includes('▼'))).toBe(true)
@@ -935,7 +935,7 @@ test('a Mermaid fence is a chart card on the desktop and a laid-out diagram in t
   await terminal.unmount()
 
   const sequence = await $.ui.mount(chartReply('terminal', '```mermaid\nsequenceDiagram\n  Alice->>Bob: Hi\n  Bob-->>Alice: Yo\n```'))
-  expect(await sequence.find({ type: 'Text', text: 'SEQUENCE' })).toBeDefined()
+  expect(await sequence.find({ type: 'Text', text: 'SEQUÊNCIA' })).toBeDefined()
   expect(await sequence.find({ type: 'Text', text: 'Alice' })).toBeDefined()
   await sequence.unmount()
 
@@ -974,7 +974,7 @@ test('the new chart kinds draw as cards on the desktop and as cell art in the te
   await gantt.unmount()
 
   const git = await $.ui.mount(chartReply('terminal', GIT))
-  expect(await git.find({ type: 'Text', text: 'GIT GRAPH' })).toBeDefined()
+  expect(await git.find({ type: 'Text', text: 'GRAFO DO GIT' })).toBeDefined()
   const lanes = (await git.findAll({ type: 'Text' })).map(text => JSON.stringify(text.children ?? []))
   expect(lanes.some(row => row.includes('◉'))).toBe(true)
   await git.unmount()
@@ -1048,7 +1048,7 @@ test('a diagram too wide for the terminal falls back to rows, one nothing can re
   await fallback.unmount()
 
   const broken = await $.ui.mount(chartReply('terminal', '```mermaid\nsequenceDiagram\n  ->>: ???\n```'))
-  expect(await broken.find({ type: 'Text', text: 'SEQUENCE' })).toBeUndefined()
+  expect(await broken.find({ type: 'Text', text: 'SEQUÊNCIA' })).toBeUndefined()
   await broken.unmount()
 })
 
@@ -1121,7 +1121,7 @@ test('the band offers Compact, nudges at 70% context, and compacts on a press', 
   await $.session.start({ surface: 'desktop', isInteractive: true, cwd: '/work' })
 
   const band = await $.ui.mount(BAND('desktop', false))
-  expect(await band.find({ type: 'Text', text: 'Context is 85% full' })).toBeDefined()
+  expect(await band.find({ type: 'Text', text: 'Contexto 85% cheio' })).toBeDefined()
   // A digit hotkey reaches it from an empty prompt where the terminal reports no clicks.
   expect(((await band.find({ key: 'compact' })) as { props: { hotkey?: string } } | undefined)?.props.hotkey).toBe('0')
   await band.press({ key: 'compact' })
@@ -1186,7 +1186,7 @@ test('the band draws each meter on its own, sized to its words, spread evenly be
 
   const band = await $.ui.mount(BAND('desktop', false))
   const meters = (await band.findAll({ type: 'Svg' })) as unknown as { props: { alt: string; width: number } }[]
-  expect(meters.map(el => el.props.alt)).toEqual([expect.stringContaining('context'), expect.stringContaining('5h'), expect.stringContaining('7d')])
+  expect(meters.map(el => el.props.alt)).toEqual([expect.stringContaining('contexto'), expect.stringContaining('5h'), expect.stringContaining('7d')])
   // Each as wide as its ring and words, not a fixed 132px slot, so the gaps between them are what spreads.
   for (const meter of meters) expect(meter.props.width).toBeLessThan(132)
   expect(await spreadsEvenly(band)).toBe(true)
@@ -1205,7 +1205,7 @@ test('/skin compact off leaves the band to the meters, compact on brings the but
   for (const surface of SURFACES) {
     const band = await $.ui.mount(BAND(surface, false))
     expect(await band.find({ key: 'compact' }), `${surface}: no button`).toBeUndefined()
-    expect(await band.find({ type: 'Text', text: 'Context is 85% full' }), `${surface}: no nudge`).toBeUndefined()
+    expect(await band.find({ type: 'Text', text: 'Contexto 85% cheio' }), `${surface}: no nudge`).toBeUndefined()
     expect(await spreadsEvenly(band), `${surface}: the meters still spread`).toBe(true)
     await band.unmount()
   }
@@ -1213,7 +1213,7 @@ test('/skin compact off leaves the band to the meters, compact on brings the but
   await runSkin($, 'compact on')
   const band = await $.ui.mount(BAND('desktop', false))
   expect(await band.find({ key: 'compact' })).toBeDefined()
-  expect(await band.find({ type: 'Text', text: 'Context is 85% full' })).toBeDefined()
+  expect(await band.find({ type: 'Text', text: 'Contexto 85% cheio' })).toBeDefined()
 })
 
 test('cards draw no background of their own', async ($, on) => {
@@ -1535,7 +1535,7 @@ test('quiet output folds a read-only call to its row, a failure to its error lin
   await runSkin($, 'quiet on')
 
   const grep = await $.ui.mount(toolUse(call('Grep', { pattern: 'TODO' })))
-  expect(await grep.find({ type: 'Text', text: /Searched/ })).toBeDefined()
+  expect(await grep.find({ type: 'Text', text: /Buscou/ })).toBeDefined()
   await grep.unmount()
 
   const quiet = await $.ui.mount(result(q1, 'Bash', { stdout: 'On branch main', stderr: '', interrupted: false }))
@@ -1577,7 +1577,7 @@ test('/skin copy copies the last reply and says so, or says there is nothing yet
   await runSkin($, 'copy')
   await runSkin($, 'copy code')
 
-  expect(toasts).toEqual(['Nothing to copy yet', 'Copied the reply', 'Copied the code'])
+  expect(toasts).toEqual(['Nada pra copiar ainda', 'Resposta copiada', 'Código copiado'])
   expect(copied).toEqual([reply, 'pnpm build'])
 })
 
@@ -2437,13 +2437,13 @@ test('long shell output folds to its head and tail on the terminal, each stream 
   expect(await ui.find({ type: 'Text', text: 'line 9' })).toBeUndefined()
   // The hidden run is a control that opens it, and `less` folds it again.
   const fold = async () => ((await ui.find({ key: 'fold-output' })) as { props: { label: string } } | undefined)?.props.label
-  expect(await fold()).toBe('▾ 28 more')
+  expect(await fold()).toBe('▾ mais 28')
   expect(await ui.find({ type: 'Text', text: 'line 37' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: 'line 40' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: 'warn: slow disk' })).toBeDefined()
   await ui.press({ key: 'fold-output' })
   expect(await ui.find({ type: 'Text', text: 'line 20' })).toBeDefined()
-  expect(await fold()).toBe('▴ less')
+  expect(await fold()).toBe('▴ menos')
   await ui.press({ key: 'fold-output' })
   expect(await ui.find({ type: 'Text', text: 'line 20' })).toBeUndefined()
 
@@ -2503,7 +2503,7 @@ test('/skin calm stills the spinner, drops the rail, folds read-only output and 
   const failed = await $.ui.mount(shellResult(look, { stdout: '', stderr, interrupted: false }, true))
   expect(await failed.find({ type: 'Text', text: '✗ failed' })).toBeDefined()
   expect(await failed.find({ type: 'Text', text: 'error 15' })).toBeDefined()
-  expect(await failed.find({ type: 'Text', text: /lines hidden/ })).toBeUndefined()
+  expect(await failed.find({ type: 'Text', text: /linhas ocultas/ })).toBeUndefined()
   await failed.unmount()
 
   const built = await $.ui.mount(shellResult(loud, { stdout: 'built', stderr: '', interrupted: false }))

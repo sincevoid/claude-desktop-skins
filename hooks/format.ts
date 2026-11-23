@@ -78,7 +78,7 @@ export function clipLines(text: string, head: number, tail: number): string {
 
   return [
     ...lines.slice(0, head),
-    `… ${hidden} lines hidden`,
+    `… ${hidden} linhas ocultas`,
     ...lines.slice(lines.length - tail),
   ].join('\n')
 }

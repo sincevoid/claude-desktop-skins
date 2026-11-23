@@ -82,8 +82,8 @@ test('an opened Read shows the path and range asked for and the text with line n
   stubEngine(on)
 
   const ui = await opened($, call('r1', 'Read', { file_path: '/work/src/a.ts', offset: 41, limit: 3 }, readOutput(3, 41)))
-  expect(await ui.find({ type: 'Text', text: /path {2}src\/a\.ts/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /lines {2}41–43/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /caminho {2}src\/a\.ts/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /linhas {2}41–43/ })).toBeDefined()
   const code = (await ui.find({ type: 'Code' })) as CodeFound
   expect(code?.props.startLine).toBe(41)
   expect(code?.props.path).toBe('/work/src/a.ts')
@@ -99,7 +99,7 @@ test('a long Read folds past 20 lines behind show all, and show less folds it ag
   expect(folded?.props.source).not.toContain('line21 ')
   await ui.press({ key: 'show-all' })
   expect(((await ui.find({ type: 'Code' })) as CodeFound)?.props.source).toContain('line30 ')
-  expect(((await ui.find({ key: 'show-all' })) as { props: { label: string } } | undefined)?.props.label).toBe('show less')
+  expect(((await ui.find({ key: 'show-all' })) as { props: { label: string } } | undefined)?.props.label).toBe('mostrar menos')
 })
 
 test('an opened Grep shows its pattern, glob and the matching lines or files', async ($, on) => {
@@ -109,12 +109,12 @@ test('an opened Grep shows its pattern, glob and the matching lines or files', a
   expect(await content.find({ type: 'Text', text: /pattern {2}TODO/ })).toBeDefined()
   expect(await content.find({ type: 'Text', text: /glob {2}\*\.ts/ })).toBeDefined()
   expect(await content.find({ type: 'Text', text: 'src/a.ts:9:// TODO test' })).toBeDefined()
-  expect(await content.find({ type: 'Text', text: '2 lines' })).toBeDefined()
+  expect(await content.find({ type: 'Text', text: '2 linhas' })).toBeDefined()
   await content.unmount()
 
   const files = await opened($, call('g2', 'Glob', { pattern: '**/*.md' }, { filenames: ['/work/README.md', '/work/docs/compat.md'], numFiles: 2, truncated: false }))
   expect(await files.find({ type: 'Text', text: 'docs/compat.md' })).toBeDefined()
-  expect(await files.find({ type: 'Text', text: '2 files' })).toBeDefined()
+  expect(await files.find({ type: 'Text', text: '2 arquivos' })).toBeDefined()
 })
 
 test('an opened PowerShell call shows its command and output as the shell card', async ($, on) => {
@@ -164,7 +164,7 @@ test('PowerShell gets the shell card and the clip as Bash does', async ($, on) =
   await $.command.run({ command: 'skin', args: 'clip on', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 100 } })
   const stdout = Array.from({ length: 40 }, (_, i) => `row ${i}`).join('\n')
   await $.ui.mount(toolResult(id, 'PowerShell', { stdout, stderr: '', interrupted: false }))
-  expect(JSON.stringify(seen.at(-1))).toContain('lines hidden')
+  expect(JSON.stringify(seen.at(-1))).toContain('linhas ocultas')
 })
 
 test('an opened Edit shows the diff: the engine’s diff on the terminal, the diff card on the desktop', async ($, on) => {
@@ -189,7 +189,7 @@ test('an opened image Read is Claude Code’s own drawing, and its result stays 
 
   const ui = await opened($, call('i1', 'Read', { file_path: '/work/shot.png' }, output))
   expect(await ui.find({ type: 'Text', text: 'stock row' })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /path {2}shot\.png/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /caminho {2}shot\.png/ })).toBeDefined()
 
   const result = await $.ui.mount(toolResult('i1', 'Read', output))
   expect(await result.find({ type: 'Text', text: 'stock row' })).toBeDefined()

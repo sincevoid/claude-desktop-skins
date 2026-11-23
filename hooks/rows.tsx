@@ -73,13 +73,13 @@ export type Call = {
 export type Meta = { ms?: number; added?: number; removed?: number }
 
 const KIND_LABEL: Readonly<Record<Kind, string>> = {
-  read: 'Read',
-  write: 'Edit',
-  run: 'Run',
-  search: 'Search',
+  read: 'Ler',
+  write: 'Editar',
+  run: 'Rodar',
+  search: 'Buscar',
   web: 'Web',
   mcp: 'MCP',
-  other: 'Other',
+  other: 'Outro',
 }
 
 const CELL_PAD = 1
@@ -414,7 +414,7 @@ function cardWithCopy(look: Look, Svg: SvgElement, built: { source: string; alt:
         ''
       ) : (
         <Box position="absolute" top={1} right={3}>
-          <Button key={key} label="Copy" plain dimColor onPress={() => copy(text)} />
+          <Button key={key} label="Copiar" plain dimColor onPress={() => copy(text)} />
         </Box>
       )}
     </Box>
@@ -429,7 +429,7 @@ function tableCard(look: Look, table: Table, Svg: SvgElement, columns: number, k
   return (
     <Box flexDirection="column">
       {cardWithCopy(look, Svg, card, key, tableMarkdown(table))}
-      {copyRow(look, `${key}-art`, tableArt(table), 'Copy as text')}
+      {copyRow(look, `${key}-art`, tableArt(table), 'Copiar como texto')}
     </Box>
   )
 }
@@ -438,7 +438,7 @@ function tableCard(look: Look, table: Table, Svg: SvgElement, columns: number, k
 function tableControls(look: Look, key: string, table: Table) {
   const { Box } = look.ui
   const markdown = copyButton(look, key, tableMarkdown(table))
-  const art = copyButton(look, `${key}-art`, tableArt(table), ' as text ')
+  const art = copyButton(look, `${key}-art`, tableArt(table), ' como texto ')
 
   return markdown === undefined || art === undefined ? undefined : (
     <Box flexDirection="row">
@@ -518,7 +518,7 @@ export function copyButton(look: Look, key: string, text: string, label = ' Copy
 }
 
 // A small Copy button under a card or block, flush right; nothing where nothing can copy.
-export function copyRow(look: Look, key: string, text: string, label = 'Copy') {
+export function copyRow(look: Look, key: string, text: string, label = 'Copiar') {
   const { Box, Button } = look.ui
   const copy = look.copy
 
@@ -642,7 +642,7 @@ function drawingOf(look: Look, segment: Segment & { kind: 'code' }, maxWidth: nu
 function diffFence(look: Look, diff: DiffInput, code: string, maxWidth: number, i: number, Svg?: SvgElement, fenceLang?: string) {
   const { Box } = look.ui
   const whole = copyButton(look, `copy-${i}`, code)
-  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' new only ')
+  const fresh = copyButton(look, `copy-${i}-new`, newOnly(diff), ' só o novo ')
 
   if (Svg !== undefined) {
     return (
@@ -779,7 +779,7 @@ export function replyRows(look: Look, segments: readonly Segment[], maxWidth: nu
           </Box>
         ),
       )}
-      {whole === undefined ? '' : copyRow(look, 'copy-reply', whole, 'copy reply')}
+      {whole === undefined ? '' : copyRow(look, 'copy-reply', whole, 'copiar resposta')}
     </Box>
   )
 }
@@ -940,7 +940,7 @@ function meterView(look: Look, meters: readonly Meter[]) {
 export function usageBand(look: Look, meters: readonly Meter[], canCompact: boolean, compact: () => void) {
   const { Box, Text, Button } = look.ui
   const { palette } = look.skin
-  const context = meters.find(meter => meter.label === 'context')?.percent ?? 0
+  const context = meters.find(meter => meter.label === 'contexto')?.percent ?? 0
   const isNudge = context >= COMPACT_NUDGE
 
   return (
@@ -949,13 +949,13 @@ export function usageBand(look: Look, meters: readonly Meter[], canCompact: bool
       <Box flexDirection="row" alignItems="center" columnGap={3} justifyContent="space-evenly" flexGrow={1}>
         {meterView(look, meters)}
       </Box>
-      {canCompact && isNudge ? <Text color={palette.warn}>{`Context is ${context}% full`}</Text> : ''}
+      {canCompact && isNudge ? <Text color={palette.warn}>{`Contexto ${context}% cheio`}</Text> : ''}
       {canCompact ? (
         // A digit hotkey: typed alone into an empty prompt it presses the band's button, which
         // is the only way in where the terminal reports no clicks. `plain` shows it: `0: Compact`.
         <Button
           key="compact"
-          label={isNudge ? 'Compact now' : 'Compact'}
+          label={isNudge ? 'Compactar agora' : 'Compactar'}
           hotkey={COMPACT_HOTKEY}
           plain
           {...(isNudge ? { variant: 'primary' as const } : { dimColor: true })}

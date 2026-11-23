@@ -513,7 +513,7 @@ export function mathSvg(tex: string, palette: Palette, width: number, hasControl
   const lines = node.kind === 'grid' ? node.rows.length : 1
   const header = [
     `<text x="16" y="${HEADER_MID + 4}" font-size="11" style="fill:${palette.muted};letter-spacing:.1em;font-weight:600">MATH</text>`,
-    lines > 1 ? `<text x="${cardW - 16 - (hasControl ? CONTROL_SLOT : 0)}" y="${HEADER_MID + 4}" text-anchor="end" font-size="11" style="fill:${palette.muted}">${lines} lines</text>` : '',
+    lines > 1 ? `<text x="${cardW - 16 - (hasControl ? CONTROL_SLOT : 0)}" y="${HEADER_MID + 4}" text-anchor="end" font-size="11" style="fill:${palette.muted}">${lines} linhas</text>` : '',
     `<line x1="0" y1="${HEADER_H - 0.5}" x2="${cardW}" y2="${HEADER_H - 0.5}" stroke="${palette.muted}" stroke-opacity=".3"/>`,
   ].join('')
   const body = `<g class="rise" style="animation-delay:80ms"><g font-family="${MATH_FONT}" transform="translate(${round(x)} ${round(y)}) scale(${round(scale)})">${formula.draw(0, 0)}</g></g>`

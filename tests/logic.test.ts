@@ -57,7 +57,7 @@ test('long output keeps its head and tail and counts the rest', async () => {
   const lines = Array.from({ length: 30 }, (_, i) => `line ${i}`).join('\n')
   const clipped = clipLines(lines, 8, 4).split('\n')
 
-  expect(clipped[8]).toBe('… 18 lines hidden')
+  expect(clipped[8]).toBe('… 18 linhas ocultas')
   expect(clipped[12]).toBe('line 29')
   expect(clipLines('a\nb', 8, 4)).toBe('a\nb')
 })
@@ -413,7 +413,7 @@ test('shell output loses its colour codes, keeps stderr apart and folds the midd
   expect(lines[0]).toEqual({ text: 'ok', isErr: false })
   expect(lines[6]).toEqual({ fold: 30 })
   expect(lines.at(-1)).toEqual({ text: 'warn: x', isErr: true })
-  expect(terminalSvg(shell!, true, tokyoNight.palette, 600).source).toContain('failed')
+  expect(terminalSvg(shell!, true, tokyoNight.palette, 600).source).toContain('falhou')
   expect(shellOutputOf({ content: 'x' })).toBeNull()
 })
 
@@ -429,7 +429,7 @@ test('plan limits read as 5h and 7d, and a meter warns as it fills', async () =>
   expect(limitLabel('five_hour')).toBe('5h')
   expect(limitLabel('seven_day')).toBe('7d')
   expect(metersOf({ context: 42.4, limits: [{ label: '5h', percent: 120 }] })).toEqual([
-    { label: 'context', percent: 42 },
+    { label: 'contexto', percent: 42 },
     { label: '5h', percent: 100 },
   ])
   expect(meterColor(85, tokyoNight.palette)).toBe(tokyoNight.palette.warn)
@@ -748,7 +748,7 @@ test('quiet output covers reads, searches and read-only shell calls, and finds t
 
   expect(errorLine('<tool_use_error>File does not exist.</tool_use_error>')).toBe('File does not exist.')
   expect(errorLine({ stdout: 'Exit code 128', stderr: 'warning: x\nfatal: not a git repository\n' })).toBe('fatal: not a git repository')
-  expect(errorLine({ stdout: '', stderr: '' })).toBe('Failed')
+  expect(errorLine({ stdout: '', stderr: '' })).toBe('Falhou')
   expect(errorLine('one\ntwo\n')).toBe('two')
 })
 
@@ -758,7 +758,7 @@ test('/skin copy takes the whole reply, or with code its last code block', async
   expect(copyOf(reply, false)).toEqual({ text: reply })
   expect(copyOf(reply, true)).toEqual({ text: 'pnpm build' })
   expect(copyOf('No code here.', true)).toEqual({ message: 'No code block in the last reply' })
-  expect(copyOf('  \n', false)).toEqual({ message: 'Nothing to copy yet' })
+  expect(copyOf('  \n', false)).toEqual({ message: 'Nada pra copiar ainda' })
 })
 
 test('a Mermaid flowchart parses into ranked nodes, shapes and labelled edges', async () => {
@@ -796,7 +796,7 @@ test('an xychart parses its axes and series, and picks a y range when none is gi
   ])
   expect(chart.min).toBe(0)
   expect(chart.max).toBeGreaterThanOrEqual(12)
-  expect(chartHeading(chart)).toEqual({ kind: 'Chart', count: '2 series' })
+  expect(chartHeading(chart)).toEqual({ kind: 'Gráfico', count: '2 séries' })
   expect(niceStep(100)).toBe(25)
 })
 
@@ -808,7 +808,7 @@ test('a pie parses its slices, and its heading counts them', async () => {
     { label: 'Dogs', value: 386 },
     { label: 'Cats', value: 85.5 },
   ])
-  expect(chartHeading(pie)).toEqual({ kind: 'Pie', count: '2 slices' })
+  expect(chartHeading(pie)).toEqual({ kind: 'Pizza', count: '2 fatias' })
 })
 
 test('chart cards draw in the skin, and a flowchart too wide for its card is left to the code card', async () => {
@@ -872,7 +872,7 @@ test('a gantt chains tasks with after, counts days and keeps its flags', async (
     [false, false, true, false],
     [false, false, false, true],
   ])
-  expect(chartHeading(gantt)).toEqual({ kind: 'Gantt', count: '4 tasks' })
+  expect(chartHeading(gantt)).toEqual({ kind: 'Gantt', count: '4 tarefas' })
 })
 
 test('a timeline groups events by period and section', async () => {
@@ -884,7 +884,7 @@ test('a timeline groups events by period and section', async () => {
     { label: '2004', section: 'Early', events: ['Facebook', 'Google'] },
     { label: '2005', section: 'Video', events: ['YouTube'] },
   ])
-  expect(chartHeading(timeline)).toEqual({ kind: 'Timeline', count: '3 periods' })
+  expect(chartHeading(timeline)).toEqual({ kind: 'Linha do tempo', count: '3 períodos' })
 })
 
 test('a journey scores each step and gathers its actors', async () => {
@@ -895,7 +895,7 @@ test('a journey scores each step and gathers its actors', async () => {
     ['Make tea', 5, ['Me']],
     ['Do work', 1, ['Me', 'Cat']],
   ])
-  expect(chartHeading(journey)).toEqual({ kind: 'Journey', count: '2 steps' })
+  expect(chartHeading(journey)).toEqual({ kind: 'Jornada', count: '2 passos' })
 })
 
 test('a kanban reads columns, cards and their metadata', async () => {
@@ -907,7 +907,7 @@ test('a kanban reads columns, cards and their metadata', async () => {
   ])
   expect(kanban.columns[0]?.cards[1]).toEqual({ label: 'Ship it', assigned: 'sverre', priority: 'High', ticket: '' })
   expect(kanban.columns[1]?.cards[0]?.ticket).toBe('SK-1')
-  expect(chartHeading(kanban)).toEqual({ kind: 'Kanban', count: '3 cards' })
+  expect(chartHeading(kanban)).toEqual({ kind: 'Kanban', count: '3 cartões' })
 })
 
 test('a mindmap nests by indent and reads node shapes', async () => {
@@ -932,7 +932,7 @@ test('a quadrant chart reads axes, quadrant names and points', async () => {
     { label: 'A', x: 0.3, y: 0.6 },
     { label: 'B', x: 0.9, y: 0.1 },
   ])
-  expect(chartHeading(chart)).toEqual({ kind: 'Quadrant', count: '2 points' })
+  expect(chartHeading(chart)).toEqual({ kind: 'Quadrante', count: '2 pontos' })
 })
 
 test('a radar reads axes across lines, its curves and range', async () => {
@@ -941,7 +941,7 @@ test('a radar reads axes across lines, its curves and range', async () => {
   expect(radar.axes.map(axis => axis.label)).toEqual(['Math', 'Science', 'English'])
   expect(radar.curves).toEqual([{ id: 'a', label: 'Alice', values: [85, 90, 80] }])
   expect([radar.min, radar.max]).toEqual([0, 100])
-  expect(chartHeading(radar)).toEqual({ kind: 'Radar', count: '1 curve' })
+  expect(chartHeading(radar)).toEqual({ kind: 'Radar', count: '1 curva' })
 })
 
 test('a sankey reads CSV flows and orders nodes from sources to sinks', async () => {
@@ -955,7 +955,7 @@ test('a sankey reads CSV flows and orders nodes from sources to sinks', async ()
   ])
   expect(sankey.nodes.indexOf('Farm')).toBeLessThan(sankey.nodes.indexOf('Mill'))
   expect(sankey.nodes.indexOf('Mill')).toBeLessThan(sankey.nodes.indexOf('Bread'))
-  expect(chartHeading(sankey)).toEqual({ kind: 'Sankey', count: '4 flows' })
+  expect(chartHeading(sankey)).toEqual({ kind: 'Sankey', count: '4 fluxos' })
 })
 
 test('a git graph tracks branches, merges and cherry-picks', async () => {
@@ -983,7 +983,7 @@ test('a git graph tracks branches, merges and cherry-picks', async () => {
   expect(merge?.tag).toBe('v1')
   expect(merge?.parents).toEqual([git.commits[2]?.id, 'feat'])
   expect(git.commits[4]?.from).toBe('feat')
-  expect(chartHeading(git)).toEqual({ kind: 'Git graph', count: '5 commits' })
+  expect(chartHeading(git)).toEqual({ kind: 'Grafo do Git', count: '5 commits' })
 })
 
 test('a treemap nests by indent and sums each section from its leaves', async () => {
@@ -1006,7 +1006,7 @@ test('a treemap nests by indent and sums each section from its leaves', async ()
     ['Network', 75],
   ])
   expect(treemap.roots[0]?.children[1]?.children.map(leaf => leaf.label)).toEqual(['Edge', 'Core'])
-  expect(chartHeading(treemap)).toEqual({ kind: 'Treemap', count: '4 items' })
+  expect(chartHeading(treemap)).toEqual({ kind: 'Treemap', count: '4 itens' })
 })
 
 test('a packet reads ranges, single bits and +n fields end to end', async () => {
@@ -1019,7 +1019,7 @@ test('a packet reads ranges, single bits and +n fields end to end', async () => 
     { start: 32, end: 32, label: 'Flag' },
     { start: 33, end: 39, label: 'Rest' },
   ])
-  expect(chartHeading(packet)).toEqual({ kind: 'Packet', count: '40 bits' })
+  expect(chartHeading(packet)).toEqual({ kind: 'Pacote', count: '40 bits' })
 })
 
 test('a packet field too narrow for its name is named in full under the art', async () => {
@@ -1121,7 +1121,7 @@ test('a block diagram reads columns, spans, shapes, nested blocks and labelled l
   expect(block.links[0]).toEqual({ from: 'api', to: 'worker', label: 'jobs', arrow: 'to', line: 'solid' })
   // A link line declares the blocks it names, as Mermaid does.
   expect(block.boxes).toBe(8)
-  expect(chartHeading(block)).toEqual({ kind: 'Block diagram', count: '8 blocks' })
+  expect(chartHeading(block)).toEqual({ kind: 'Diagrama de blocos', count: '8 blocos' })
 })
 
 test('an architecture places services on a grid from the sides their edges join', async () => {
@@ -1154,7 +1154,7 @@ test('an architecture places services on a grid from the sides their edges join'
   ])
   expect(at('mid')?.isJunction).toBe(true)
   expect(architecture.edges[3]).toEqual({ from: 'mid', fromSide: 'L', to: 'db', toSide: 'R', label: '', arrow: 'none' })
-  expect(chartHeading(architecture)).toEqual({ kind: 'Architecture', count: '4 services' })
+  expect(chartHeading(architecture)).toEqual({ kind: 'Arquitetura', count: '4 serviços' })
 })
 
 test('a C4 diagram reads people, systems, boundaries and relations', async () => {
@@ -1182,7 +1182,7 @@ test('a C4 diagram reads people, systems, boundaries and relations', async () =>
     ['Reads [HTTPS]', 'to'],
     ['Syncs', 'both'],
   ])
-  expect(chartHeading(c4)).toEqual({ kind: 'C4 context', count: '3 elements' })
+  expect(chartHeading(c4)).toEqual({ kind: 'C4 context', count: '3 elementos' })
 })
 
 test('a C4 link through another box goes round it in a lane on narrow cards', async () => {

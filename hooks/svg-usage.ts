@@ -61,7 +61,7 @@ export function limitLabel(kind: string): string {
 // `countdowns`, by limit label, puts each limit's time to reset beside its meter.
 export function metersOf(usage: UsageSnap, countdowns: Record<string, string> = {}): Meter[] {
   return [
-    ...(usage.context === null ? [] : [{ label: 'context', percent: usage.context }]),
+    ...(usage.context === null ? [] : [{ label: 'contexto', percent: usage.context }]),
     ...usage.limits.map(limit => {
       const resets = countdowns[limit.label]
 

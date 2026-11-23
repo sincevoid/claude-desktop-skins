@@ -39,16 +39,16 @@ const fieldsOf = (value: unknown): Fields => (typeof value === 'object' && value
 const SHOWN_BY_DIFF = new Set(['old_string', 'new_string', 'content', 'edits'])
 
 const LABELS: Readonly<Record<string, string>> = {
-  file_path: 'path',
-  notebook_path: 'path',
-  run_in_background: 'background',
-  output_mode: 'mode',
-  '-i': 'ignore case',
-  '-n': 'line numbers',
-  '-A': 'after',
-  '-B': 'before',
-  '-C': 'context',
-  head_limit: 'limit',
+  file_path: 'caminho',
+  notebook_path: 'caminho',
+  run_in_background: 'segundo plano',
+  output_mode: 'modo',
+  '-i': 'ignora maiúsculas',
+  '-n': 'número da linha',
+  '-A': 'depois',
+  '-B': 'antes',
+  '-C': 'contexto',
+  head_limit: 'limite',
 }
 
 const valueText = (value: unknown): string =>
@@ -65,7 +65,7 @@ function rangeOf(fields: Fields): Field[] {
 
   const from = offset ?? 1
 
-  return [{ label: 'lines', value: limit === undefined ? `${from}–end` : `${from}–${from + limit - 1}` }]
+  return [{ label: 'linhas', value: limit === undefined ? `${from}–fim` : `${from}–${from + limit - 1}` }]
 }
 
 // The call's input, each field as given; paths under the session's folder made relative.
@@ -118,7 +118,7 @@ function searchBody(output: unknown, cwd: string): Body {
     const lines = clean(record.content).replace(/\n$/, '').split('\n')
     const numLines = typeof record.numLines === 'number' ? record.numLines : lines.length
 
-    return { kind: 'matches', lines: lines.map(line => shortenPath(line, cwd)), note: `${count(numLines, 'line')}${truncated}` }
+    return { kind: 'matches', lines: lines.map(line => shortenPath(line, cwd)), note: `${count(numLines, 'linha')}${truncated}` }
   }
 
   if (files.length === 0 && typeof record.numFiles !== 'number') {
@@ -127,7 +127,7 @@ function searchBody(output: unknown, cwd: string): Body {
 
   return files.length === 0
     ? { kind: 'none' }
-    : { kind: 'matches', lines: files.map(file => shortenPath(file, cwd)), note: `${count(files.length, 'file')}${truncated}` }
+    : { kind: 'matches', lines: files.map(file => shortenPath(file, cwd)), note: `${count(files.length, 'arquivo')}${truncated}` }
 }
 
 function webBody(tool: string, output: unknown): Body {
@@ -148,7 +148,7 @@ function webBody(tool: string, output: unknown): Body {
           }),
     )
 
-    return { kind: 'matches', lines, note: count(lines.length, 'result') }
+    return { kind: 'matches', lines, note: count(lines.length, 'resultado') }
   }
 
   return { kind: 'stock' }

@@ -23,7 +23,7 @@ export function foldButton(look: Look, key: string, count: number, limit: number
 
   const isOpen = folds.open.has(key)
   const ascii = look.prefs.icons === 'ascii'
-  const label = isOpen ? `${ascii ? '^' : '▴'} less` : `${ascii ? 'v' : '▾'} ${count - limit} more`
+  const label = isOpen ? `${ascii ? '^' : '▴'} menos` : `${ascii ? 'v' : '▾'} mais ${count - limit}`
 
   return (
     <Box flexDirection="row">

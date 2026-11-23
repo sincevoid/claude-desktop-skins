@@ -228,12 +228,12 @@ export function isQuiet(tool: string, input: unknown): boolean {
 export function quietLabel(tool: string): string {
   switch (tool) {
     case 'Grep':
-      return 'Searched'
+      return 'Buscou'
     case 'Glob':
-      return 'Listed'
+      return 'Listou'
     case 'Bash':
     case 'PowerShell':
-      return 'Looked'
+      return 'Olhou'
     default:
       return tool
   }
@@ -255,5 +255,5 @@ export function errorLine(output: unknown): string {
     .map(line => line.trim())
     .filter(line => line !== '')
 
-  return lines.find(line => ERROR_WORDS.test(line)) ?? lines.at(-1) ?? 'Failed'
+  return lines.find(line => ERROR_WORDS.test(line)) ?? lines.at(-1) ?? 'Falhou'
 }

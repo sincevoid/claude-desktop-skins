@@ -41,7 +41,7 @@ export const listOf = (list: string): string[] =>
     .map(unquote)
     .filter(item => item !== '')
 
-export const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
+export const plural = (n: number, word: string, many = `${word}s`): string => `${n} ${n === 1 ? word : many}`
 
 // `---\ntitle: x\n---` before the header: its title, and the source without it.
 export function frontmatterOf(source: string): { title: string; lines: string[] } {

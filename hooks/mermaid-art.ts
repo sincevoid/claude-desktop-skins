@@ -25,12 +25,12 @@ export interface Art {
 }
 
 const KINDS: readonly (readonly [RegExp, string])[] = [
-  [/^(flowchart|graph)\b/i, 'Flowchart'],
-  [/^statediagram(-v2)?\s*$/i, 'State'],
-  [/^sequencediagram\s*$/i, 'Sequence'],
-  [/^classdiagram\s*$/i, 'Class'],
+  [/^(flowchart|graph)\b/i, 'Fluxograma'],
+  [/^statediagram(-v2)?\s*$/i, 'Estados'],
+  [/^sequencediagram\s*$/i, 'Sequência'],
+  [/^classdiagram\s*$/i, 'Classes'],
   [/^erdiagram\s*$/i, 'ER'],
-  [/^xychart(-beta)?\b/i, 'Chart'],
+  [/^xychart(-beta)?\b/i, 'Gráfico'],
 ]
 
 const MAX_LINES = 80
@@ -117,7 +117,7 @@ function drawArt(source: string, columns: number, ascii: boolean): Art | null {
 
   const room = columns - 2
   // Left to right first where asked; a wide one is tried again top to bottom.
-  const attempts = kind === 'Flowchart' && /^(flowchart|graph)\s+(LR|RL)\b/i.test(text)
+  const attempts = kind === 'Fluxograma' && /^(flowchart|graph)\s+(LR|RL)\b/i.test(text)
     ? [text, text.replace(/^(flowchart|graph)\s+(LR|RL)\b/i, '$1 TD')]
     : [text]
 
@@ -129,7 +129,7 @@ function drawArt(source: string, columns: number, ascii: boolean): Art | null {
       return null
     }
 
-    const grid = kind === 'Flowchart' || kind === 'State' ? reattach(drawn) : drawn
+    const grid = kind === 'Fluxograma' || kind === 'Estados' ? reattach(drawn) : drawn
 
     if (grid.length <= MAX_ROWS && grid.every(row => widthOf(row.map(cell => cell.char).join('')) <= room)) {
       return { kind, title, rows: paint(grid, kind) }
@@ -261,13 +261,13 @@ function drawsWide(text: string, grid: Cell[][]): boolean {
 }
 
 function render(text: string, kind: string, room: number, ascii: boolean): Cell[][] | null {
-  if (kind === 'Chart') {
+  if (kind === 'Gráfico') {
     const width = Math.max(24, Math.min(60, room - 10))
     setChartSize(width, Math.max(8, Math.min(16, Math.round(width * 0.3))))
   }
 
   // Charts size their own labels.
-  const sent = kind === 'Chart' ? text : widened(text)
+  const sent = kind === 'Gráfico' ? text : widened(text)
 
   try {
     const html = renderMermaidAscii(sent, { useAscii: ascii, paddingX: 4, paddingY: 2, colorMode: 'html', theme: SENTINEL })
@@ -340,8 +340,8 @@ function trimGrid(grid: Cell[][]): Cell[][] {
 // --- Colour ------------------------------------------------------------------------
 
 function paint(grid: Cell[][], kind: string): Run[][] {
-  const boxes = kind === 'Chart' ? null : boxColours(grid)
-  const titleRow = kind === 'Chart' ? grid.findIndex(row => row.some(cell => cell.role === 'text')) : -1
+  const boxes = kind === 'Gráfico' ? null : boxColours(grid)
+  const titleRow = kind === 'Gráfico' ? grid.findIndex(row => row.some(cell => cell.role === 'text')) : -1
 
   return grid.map((row, y) => {
     const runs: Run[] = []

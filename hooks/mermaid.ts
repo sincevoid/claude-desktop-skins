@@ -335,39 +335,39 @@ function parsePie(head: string, body: readonly string[]): Pie | null {
 export function chartHeading(chart: Chart): { kind: string; count: string } {
   switch (chart.kind) {
     case 'flow':
-      return { kind: 'Flowchart', count: plural(chart.nodes.length, 'step') }
+      return { kind: 'Fluxograma', count: plural(chart.nodes.length, 'passo') }
     case 'xy':
-      return { kind: 'Chart', count: chart.series.length > 1 ? `${chart.series.length} series` : plural(chart.labels.length, 'point') }
+      return { kind: 'Gráfico', count: chart.series.length > 1 ? `${chart.series.length} séries` : plural(chart.labels.length, 'ponto') }
     case 'pie':
-      return { kind: 'Pie', count: plural(chart.slices.length, 'slice') }
+      return { kind: 'Pizza', count: plural(chart.slices.length, 'fatia') }
     case 'gantt':
-      return { kind: 'Gantt', count: plural(chart.tasks.length, 'task') }
+      return { kind: 'Gantt', count: plural(chart.tasks.length, 'tarefa') }
     case 'timeline':
-      return { kind: 'Timeline', count: plural(chart.periods.length, 'period') }
+      return { kind: 'Linha do tempo', count: plural(chart.periods.length, 'período') }
     case 'journey':
-      return { kind: 'Journey', count: plural(chart.steps.length, 'step') }
+      return { kind: 'Jornada', count: plural(chart.steps.length, 'passo') }
     case 'kanban':
-      return { kind: 'Kanban', count: plural(chart.columns.reduce((sum, column) => sum + column.cards.length, 0), 'card') }
+      return { kind: 'Kanban', count: plural(chart.columns.reduce((sum, column) => sum + column.cards.length, 0), 'cartão', 'cartões') }
     case 'mindmap':
-      return { kind: 'Mindmap', count: plural(chart.count, 'node') }
+      return { kind: 'Mapa mental', count: plural(chart.count, 'nó') }
     case 'quadrant':
-      return { kind: 'Quadrant', count: plural(chart.points.length, 'point') }
+      return { kind: 'Quadrante', count: plural(chart.points.length, 'ponto') }
     case 'radar':
-      return { kind: 'Radar', count: plural(chart.curves.length, 'curve') }
+      return { kind: 'Radar', count: plural(chart.curves.length, 'curva') }
     case 'sankey':
-      return { kind: 'Sankey', count: plural(chart.links.length, 'flow') }
+      return { kind: 'Sankey', count: plural(chart.links.length, 'fluxo') }
     case 'git':
-      return { kind: 'Git graph', count: plural(chart.commits.length, 'commit') }
+      return { kind: 'Grafo do Git', count: plural(chart.commits.length, 'commit') }
     case 'treemap':
-      return { kind: 'Treemap', count: plural(chart.leaves, 'item') }
+      return { kind: 'Treemap', count: plural(chart.leaves, 'item', 'itens') }
     case 'packet':
-      return { kind: 'Packet', count: plural(chart.bits, 'bit') }
+      return { kind: 'Pacote', count: plural(chart.bits, 'bit') }
     case 'block':
-      return { kind: 'Block diagram', count: plural(chart.boxes, 'block') }
+      return { kind: 'Diagrama de blocos', count: plural(chart.boxes, 'bloco') }
     case 'architecture':
-      return { kind: 'Architecture', count: plural(chart.services.filter(service => !service.isJunction).length, 'service') }
+      return { kind: 'Arquitetura', count: plural(chart.services.filter(service => !service.isJunction).length, 'serviço') }
     case 'c4':
-      return { kind: `C4 ${chart.level.toLowerCase()}`, count: plural(chart.boxes, 'element') }
+      return { kind: `C4 ${chart.level.toLowerCase()}`, count: plural(chart.boxes, 'elemento') }
   }
 }
 

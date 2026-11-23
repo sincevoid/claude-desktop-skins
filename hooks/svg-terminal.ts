@@ -57,18 +57,18 @@ export function terminalSvg(output: ShellOutput, isErrored: boolean, palette: Pa
   const lines = outputLines(output)
   const step = staggerStep(Math.max(1, lines.length), 22)
   const status = output.interrupted
-    ? { text: 'interrupted', color: palette.warn }
+    ? { text: 'interrompido', color: palette.warn }
     : output.timedOutAfterMs !== undefined
-      ? { text: 'timed out', color: palette.warn }
+      ? { text: 'tempo esgotado', color: palette.warn }
       : isErrored
-        ? { text: 'failed', color: palette.err }
+        ? { text: 'falhou', color: palette.err }
         : { text: 'ok', color: palette.ok }
 
-  const rows = (lines.length === 0 ? [{ text: 'no output', isErr: false, isNote: true }] : lines).map((line, i) => {
+  const rows = (lines.length === 0 ? [{ text: 'sem saída', isErr: false, isNote: true }] : lines).map((line, i) => {
     const top = HEADER_H + 6 + i * LINE_H
 
     if ('fold' in line) {
-      return `<g class="rise" ${riseDelay(i, step)}><text x="20" y="${top + 14}" font-size="11.5" style="fill:${palette.muted}">⋯  ${line.fold} more lines</text></g>`
+      return `<g class="rise" ${riseDelay(i, step)}><text x="20" y="${top + 14}" font-size="11.5" style="fill:${palette.muted}">⋯  mais ${line.fold} linhas</text></g>`
     }
 
     const color = 'isNote' in line ? palette.muted : line.isErr ? palette.err : palette.fg
