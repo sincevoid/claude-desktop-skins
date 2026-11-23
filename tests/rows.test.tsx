@@ -1613,7 +1613,7 @@ test('a session start says when a newer release is out, at most once a day', asy
 
   await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
   await unawaited()
-  expect(toasts.filter(text => text.startsWith('skins 0.1.3 is out'))).toHaveLength(1)
+  expect(toasts.filter(text => text.startsWith('Saiu a versão 0.1.3'))).toHaveLength(1)
 
   latest = '0.1.4'
   await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
